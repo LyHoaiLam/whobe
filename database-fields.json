@@ -1,0 +1,235 @@
+{
+  "database": "WhobeDB",
+  "tables": [
+    {
+      "table": "Notifications",
+      "description": "Lưu tất cả thông báo của người dùng",
+      "fields": [
+        { "name": "notification_id", "type": "BIGINT", "key": "PK", "description": "ID duy nhất của thông báo, tự tăng" },
+        { "name": "recipient_id",    "type": "GUID",   "key": "FK", "description": "ID người NHẬN thông báo (trỏ về Users)" },
+        { "name": "actor_id",        "type": "GUID",   "key": "FK", "description": "ID người THỰC HIỆN hành động gây ra thông báo (vd: người like, người gửi kết bạn). Có thể null nếu là thông báo hệ thống" },
+        { "name": "notification_type","type": "TINYINT","key": null, "description": "Loại thông báo: 1=Like, 2=Comment, 3=Share, 4=FriendRequest, 5=FriendAccepted, 6=Message, 7=Mention" },
+        { "name": "entity_type",     "type": "TINYINT","key": null, "description": "Loại đối tượng liên quan: 0=Post, 1=Comment, 2=User, 3=Message, 4=Story. Dùng để navigate khi bấm vào thông báo" },
+        { "name": "message",         "type": "NVARCHAR","key": null,"description": "Nội dung text của thông báo, vd: 'Nguyễn Văn A đã thích bài viết của bạn'" },
+        { "name": "is_read",         "type": "BIT",    "key": null, "description": "Đã đọc chưa: 0=Chưa đọc, 1=Đã đọc. Dùng để hiển thị badge đỏ" },
+        { "name": "created_at",      "type": "DATETIME2","key": null,"description": "Thời điểm thông báo được tạo" },
+        { "name": "read_at",         "type": "DATETIME2","key": null,"description": "Thời điểm người dùng đọc thông báo. Null nếu chưa đọc" }
+      ]
+    },
+    {
+      "table": "Conversations",
+      "description": "Lưu các cuộc hội thoại (chat 1-1 hoặc nhóm)",
+      "fields": [
+        { "name": "conversation_id", "type": "GUID",    "key": "PK", "description": "ID duy nhất của cuộc hội thoại" },
+        { "name": "type",            "type": "TINYINT", "key": null, "description": "Loại hội thoại: 0=Chat 1-1 (Direct), 1=Nhóm (Group)" },
+        { "name": "name",            "type": "NVARCHAR","key": null, "description": "Tên nhóm chat. Null nếu là chat 1-1" },
+        { "name": "avatar_url",      "type": "NVARCHAR","key": null, "description": "Ảnh đại diện nhóm. Null nếu là chat 1-1" },
+        { "name": "created_by",      "type": "GUID",    "key": "FK", "description": "ID người tạo cuộc hội thoại (trỏ về Users)" },
+        { "name": "last_message_id", "type": "BIGINT",  "key": "FK", "description": "ID tin nhắn mới nhất (trỏ về Messages). Dùng để hiển thị preview tin nhắn cuối trong danh sách chat" },
+        { "name": "created_at",      "type": "DATETIME2","key": null,"description": "Thời điểm tạo cuộc hội thoại" },
+        { "name": "update_at",       "type": "DATETIME2","key": null,"description": "Thời điểm có hoạt động mới nhất (tin nhắn mới). Dùng để sort danh sách chat" }
+      ]
+    },
+    {
+      "table": "ConversationMembers",
+      "description": "Lưu danh sách thành viên trong mỗi cuộc hội thoại",
+      "fields": [
+        { "name": "member_id",       "type": "BIGINT",  "key": "PK", "description": "ID duy nhất của bản ghi thành viên, tự tăng" },
+        { "name": "conversation_id", "type": "GUID",    "key": "FK", "description": "Thuộc cuộc hội thoại nào (trỏ về Conversations)" },
+        { "name": "user_id",         "type": "GUID",    "key": "FK", "description": "Thành viên là ai (trỏ về Users)" },
+        { "name": "role",            "type": "TINYINT", "key": null, "description": "Vai trò trong nhóm: 0=Member, 1=Admin, 2=Owner (người tạo nhóm)" },
+        { "name": "nickname",        "type": "NVARCHAR","key": null, "description": "Biệt danh của thành viên trong cuộc hội thoại này. Null nếu dùng tên mặc định" },
+        { "name": "last_read_at",    "type": "DATETIME2","key": null,"description": "Thời điểm thành viên đọc tin nhắn cuối cùng. Dùng để tính số tin nhắn chưa đọc (unread count)" },
+        { "name": "joined_at",       "type": "DATETIME2","key": null,"description": "Thời điểm tham gia cuộc hội thoại" },
+        { "name": "is_muted",        "type": "BIT",     "key": null, "description": "Có tắt thông báo không: 0=Bật thông báo, 1=Tắt thông báo cho hội thoại này" }
+      ]
+    },
+    {
+      "table": "Messages",
+      "description": "Lưu tất cả tin nhắn trong các cuộc hội thoại",
+      "fields": [
+        { "name": "message_id",      "type": "BIGINT",  "key": "PK", "description": "ID duy nhất của tin nhắn, tự tăng" },
+        { "name": "conversation_id", "type": "GUID",    "key": "FK", "description": "Tin nhắn thuộc cuộc hội thoại nào (trỏ về Conversations)" },
+        { "name": "sender_id",       "type": "GUID",    "key": "FK", "description": "Ai gửi tin nhắn này (trỏ về Users)" },
+        { "name": "reply_to_id",     "type": "BIGINT",  "key": "FK", "description": "ID tin nhắn đang được reply. Null nếu không phải reply. Trỏ về chính bảng Messages" },
+        { "name": "message_type",    "type": "TINYINT", "key": null, "description": "Loại tin nhắn: 0=Text, 1=Image, 2=Video, 3=File, 4=Sticker" },
+        { "name": "content",         "type": "NVARCHAR","key": null, "description": "Nội dung text của tin nhắn. Null nếu là tin nhắn ảnh/video" },
+        { "name": "media_url",       "type": "NVARCHAR","key": null, "description": "URL file đính kèm (ảnh, video, file). Null nếu là tin nhắn text" },
+        { "name": "is_deleted",      "type": "BIT",     "key": null, "description": "Đã xóa chưa: 1=Đã xóa (soft delete, vẫn giữ record nhưng ẩn nội dung)" },
+        { "name": "sent_at",         "type": "DATETIME2","key": null,"description": "Thời điểm gửi tin nhắn" },
+        { "name": "edited_at",       "type": "DATETIME2","key": null,"description": "Thời điểm chỉnh sửa tin nhắn. Null nếu chưa sửa. Dùng để hiển thị tag 'đã chỉnh sửa'" }
+      ]
+    },
+    {
+      "table": "MessageReadReceipts",
+      "description": "Lưu trạng thái đã đọc của từng tin nhắn theo từng người",
+      "fields": [
+        { "name": "receipt_id",  "type": "BIGINT",   "key": "PK", "description": "ID duy nhất của bản ghi đã đọc, tự tăng" },
+        { "name": "message_id",  "type": "BIGINT",   "key": "FK", "description": "Tin nhắn nào đã được đọc (trỏ về Messages)" },
+        { "name": "user_id",     "type": "GUID",     "key": "FK", "description": "Ai đã đọc tin nhắn đó (trỏ về Users)" },
+        { "name": "created_at",  "type": "DATETIME2","key": null, "description": "Thời điểm người dùng đọc tin nhắn. Dùng để hiển thị 'Đã xem lúc 10:30'" }
+      ]
+    },
+    {
+      "table": "Reactions",
+      "description": "Lưu các react (like, love, haha...) trên bài viết hoặc comment",
+      "fields": [
+        { "name": "reaction_id",   "type": "BIGINT",  "key": "PK", "description": "ID duy nhất của lượt react, tự tăng" },
+        { "name": "user_id",       "type": "GUID",    "key": "FK", "description": "Ai đã react (trỏ về Users)" },
+        { "name": "target_type",   "type": "TINYINT", "key": null, "description": "React trên loại gì: 0=Post, 1=Comment, 2=Story. Thiết kế generic để dùng chung 1 bảng" },
+        { "name": "target_id",     "type": "GUID",    "key": null, "description": "ID của đối tượng được react (post_id hoặc comment_id tùy target_type)" },
+        { "name": "reaction_type", "type": "TINYINT", "key": null, "description": "Loại react: 1=Like 👍, 2=Love ❤️, 3=Haha 😂, 4=Wow 😮, 5=Sad 😢, 6=Angry 😡" },
+        { "name": "created_at",    "type": "DATETIME2","key": null,"description": "Thời điểm react" }
+      ]
+    },
+    {
+      "table": "Comments",
+      "description": "Lưu tất cả bình luận trên bài viết, hỗ trợ reply lồng nhau",
+      "fields": [
+        { "name": "comment_id",        "type": "GUID",    "key": "PK", "description": "ID duy nhất của comment" },
+        { "name": "post_id",           "type": "GUID",    "key": "FK", "description": "Comment thuộc bài viết nào (trỏ về Posts)" },
+        { "name": "author_id",         "type": "GUID",    "key": "FK", "description": "Ai viết comment (trỏ về Users)" },
+        { "name": "parent_comment_id", "type": "GUID",    "key": "FK", "description": "ID comment cha nếu là reply. Null nếu là comment gốc. Trỏ về chính bảng Comments" },
+        { "name": "content",           "type": "NVARCHAR","key": null, "description": "Nội dung text của comment" },
+        { "name": "media_url",         "type": "NVARCHAR","key": null, "description": "URL ảnh/gif đính kèm trong comment. Null nếu chỉ có text" },
+        { "name": "is_deleted",        "type": "BIT",     "key": null, "description": "Đã xóa chưa: 1=Đã xóa (soft delete)" },
+        { "name": "created_at",        "type": "DATETIME2","key": null,"description": "Thời điểm viết comment" },
+        { "name": "update_at",         "type": "DATETIME2","key": null,"description": "Thời điểm chỉnh sửa comment. Null nếu chưa sửa" }
+      ]
+    },
+    {
+      "table": "Shares",
+      "description": "Lưu lịch sử chia sẻ bài viết",
+      "fields": [
+        { "name": "share_id",      "type": "BIGINT",   "key": "PK", "description": "ID duy nhất của lượt share, tự tăng" },
+        { "name": "user_id",       "type": "GUID",     "key": "FK", "description": "Ai đã share (trỏ về Users)" },
+        { "name": "post_id",       "type": "GUID",     "key": "FK", "description": "Share bài viết nào (trỏ về Posts)" },
+        { "name": "caption",       "type": "NVARCHAR", "key": null, "description": "Lời chia sẻ kèm theo khi share. Có thể null" },
+        { "name": "privacy_level", "type": "TINYINT",  "key": null, "description": "Quyền riêng tư bài share: 0=Công khai, 1=Bạn bè, 2=Chỉ mình tôi" },
+        { "name": "created_at",    "type": "DATETIME2","key": null, "description": "Thời điểm share bài" }
+      ]
+    },
+    {
+      "table": "SavedPosts",
+      "description": "Lưu danh sách bài viết đã lưu của người dùng",
+      "fields": [
+        { "name": "save_id",       "type": "BIGINT",   "key": "PK", "description": "ID duy nhất của bản ghi đã lưu, tự tăng" },
+        { "name": "user_id",       "type": "GUID",     "key": "FK", "description": "Ai đã lưu bài (trỏ về Users)" },
+        { "name": "post_id",       "type": "GUID",     "key": "FK", "description": "Lưu bài viết nào (trỏ về Posts)" },
+        { "name": "collection_id", "type": "BIGINT",   "key": "FK", "description": "Lưu vào bộ sưu tập nào. Null nếu chỉ lưu không phân loại" },
+        { "name": "saved_at",      "type": "DATETIME2","key": null, "description": "Thời điểm lưu bài viết" }
+      ]
+    },
+    {
+      "table": "Posts",
+      "description": "Lưu tất cả bài viết của người dùng",
+      "fields": [
+        { "name": "post_id",       "type": "GUID",     "key": "PK", "description": "ID duy nhất của bài viết" },
+        { "name": "author_id",     "type": "GUID",     "key": "FK", "description": "Ai đăng bài (trỏ về Users)" },
+        { "name": "page_id",       "type": "GUID",     "key": "FK", "description": "Đăng lên Trang nào. Null nếu đăng trên tường cá nhân (trỏ về Pages)" },
+        { "name": "group_id",      "type": "GUID",     "key": "FK", "description": "Đăng vào Nhóm nào. Null nếu không đăng vào nhóm (trỏ về Groups)" },
+        { "name": "content",       "type": "NVARCHAR", "key": null, "description": "Nội dung text của bài viết" },
+        { "name": "post_type",     "type": "TINYINT",  "key": null, "description": "Loại bài: 0=Bài thường, 1=Bài share, 2=Ảnh đại diện mới, 3=Ảnh bìa mới" },
+        { "name": "privacy_level", "type": "TINYINT",  "key": null, "description": "Quyền riêng tư: 0=Công khai, 1=Bạn bè, 2=Chỉ mình tôi" },
+        { "name": "origin_post_id","type": "GUID",     "key": "FK", "description": "ID bài gốc nếu đây là bài share. Null nếu là bài đăng gốc (trỏ về Posts)" },
+        { "name": "location_name", "type": "NVARCHAR", "key": null, "description": "Tên địa điểm check-in. Null nếu không check-in" },
+        { "name": "latitude",      "type": "DECIMAL",  "key": null, "description": "Vĩ độ tọa độ GPS của địa điểm check-in" },
+        { "name": "longitude",     "type": "DECIMAL",  "key": null, "description": "Kinh độ tọa độ GPS của địa điểm check-in" },
+        { "name": "feedling_id",   "type": "INT",      "key": "FK", "description": "Cảm xúc khi đăng bài (trỏ về Feelings). Null nếu không chọn cảm xúc" },
+        { "name": "is_deleted",    "type": "BIT",      "key": null, "description": "Đã xóa chưa: 1=Đã xóa (soft delete, vẫn còn trong DB)" },
+        { "name": "created_at",    "type": "DATETIME2","key": null, "description": "Thời điểm đăng bài" },
+        { "name": "update_at",     "type": "DATETIME2","key": null, "description": "Thời điểm chỉnh sửa bài viết lần cuối" }
+      ]
+    },
+    {
+      "table": "PostMedia",
+      "description": "Lưu ảnh và video đính kèm trong bài viết (1 bài có thể có nhiều media)",
+      "fields": [
+        { "name": "media_id",         "type": "BIGINT",  "key": "PK", "description": "ID duy nhất của file media, tự tăng" },
+        { "name": "post_id",          "type": "GUID",    "key": "FK", "description": "Thuộc bài viết nào (trỏ về Posts)" },
+        { "name": "media_url",        "type": "NVARCHAR","key": null, "description": "URL đường dẫn đến file ảnh/video đã upload" },
+        { "name": "thumbnail_url",    "type": "NVARCHAR","key": null, "description": "URL ảnh thumbnail (ảnh thu nhỏ xem trước). Thường dùng cho video" },
+        { "name": "media_type",       "type": "TINYINT", "key": null, "description": "Loại file: 0=Ảnh, 1=Video, 2=File đính kèm" },
+        { "name": "width",            "type": "INT",     "key": null, "description": "Chiều rộng ảnh/video (pixel). Dùng để render đúng tỉ lệ" },
+        { "name": "height",           "type": "INT",     "key": null, "description": "Chiều cao ảnh/video (pixel). Dùng để render đúng tỉ lệ" },
+        { "name": "duration_seconds", "type": "INT",     "key": null, "description": "Thời lượng video (giây). Null nếu là ảnh" },
+        { "name": "file_size_kb",     "type": "INT",     "key": null, "description": "Dung lượng file (KB). Dùng để hiển thị thông tin file" },
+        { "name": "sort_order",       "type": "TINYINT", "key": null, "description": "Thứ tự hiển thị trong album ảnh của bài viết (0, 1, 2...)" },
+        { "name": "created_at",       "type": "DATETIME2","key": null,"description": "Thời điểm upload" }
+      ]
+    },
+    {
+      "table": "PostTags",
+      "description": "Lưu danh sách người được tag trong bài viết",
+      "fields": [
+        { "name": "tag_id",         "type": "BIGINT",   "key": "PK", "description": "ID duy nhất của lượt tag, tự tăng" },
+        { "name": "post_id",        "type": "GUID",     "key": "FK", "description": "Tag trong bài viết nào (trỏ về Posts)" },
+        { "name": "tagged_user_id", "type": "GUID",     "key": "FK", "description": "Người được tag là ai (trỏ về Users)" },
+        { "name": "tagged_by_id",   "type": "GUID",     "key": "FK", "description": "Ai thực hiện tag (trỏ về Users). Thường là chủ bài hoặc người khác trong ảnh" },
+        { "name": "is_approved",    "type": "BIT",      "key": null, "description": "Người được tag có đồng ý không: 1=Đồng ý hiển thị, 0=Chưa duyệt/Từ chối" },
+        { "name": "created_at",     "type": "DATETIME2","key": null, "description": "Thời điểm tag" }
+      ]
+    },
+    {
+      "table": "Feelings",
+      "description": "Bảng danh mục cảm xúc khi đăng bài (đang cảm thấy hạnh phúc, buồn...)",
+      "fields": [
+        { "name": "feeling_id", "type": "INT",     "key": "PK", "description": "ID duy nhất của cảm xúc, tự tăng" },
+        { "name": "name",       "type": "NVARCHAR","key": null, "description": "Tên cảm xúc, vd: 'hạnh phúc', 'buồn', 'phấn khích'" },
+        { "name": "emoji",      "type": "NVARCHAR","key": null, "description": "Emoji đại diện cho cảm xúc, vd: 😊 😢 🎉" },
+        { "name": "categoty",   "type": "NVARCHAR","key": null, "description": "Nhóm cảm xúc, vd: 'Tích cực', 'Tiêu cực', 'Hoạt động'" }
+      ]
+    },
+    {
+      "table": "Hashtags",
+      "description": "Bảng danh mục các hashtag được dùng trong bài viết",
+      "fields": [
+        { "name": "hashtag_id", "type": "BIGINT",   "key": "PK", "description": "ID duy nhất của hashtag, tự tăng" },
+        { "name": "tag_name",   "type": "NVARCHAR", "key": "UK", "description": "Tên hashtag không có dấu #, vd: 'travel', 'food'. Unique — không trùng" },
+        { "name": "post_count", "type": "INT",      "key": null, "description": "Số bài viết đang dùng hashtag này. Dùng để hiển thị trending hashtags" },
+        { "name": "created_at", "type": "DATETIME2","key": null, "description": "Thời điểm hashtag được tạo lần đầu tiên" }
+      ]
+    },
+    {
+      "table": "PostHashtags",
+      "description": "Bảng trung gian nối Posts với Hashtags (quan hệ nhiều-nhiều)",
+      "fields": [
+        { "name": "post_id",    "type": "GUID",  "key": "FK", "description": "Bài viết nào (trỏ về Posts). Cùng với hashtag_id tạo thành PK kép" },
+        { "name": "hashtag_id", "type": "BIGINT","key": "FK", "description": "Hashtag nào (trỏ về Hashtags). Cùng với post_id tạo thành PK kép" }
+      ]
+    },
+    {
+      "table": "Friendships",
+      "description": "Lưu quan hệ kết bạn giữa các người dùng",
+      "fields": [
+        { "name": "friendship_id",  "type": "BIGINT",   "key": "PK", "description": "ID duy nhất của quan hệ kết bạn, tự tăng" },
+        { "name": "requester_id",   "type": "GUID",     "key": "FK", "description": "Người GỬI lời mời kết bạn (trỏ về Users)" },
+        { "name": "receiver_id",    "type": "GUID",     "key": "FK", "description": "Người NHẬN lời mời kết bạn (trỏ về Users)" },
+        { "name": "status",         "type": "TINYINT",  "key": null, "description": "Trạng thái: 0=Đang chờ (Pending), 1=Đã chấp nhận (Accepted), 2=Đã từ chối (Declined), 3=Đã chặn (Blocked)" },
+        { "name": "created_at",     "type": "DATETIME2","key": null, "description": "Thời điểm gửi lời mời kết bạn" },
+        { "name": "responded_at",   "type": "DATETIME2","key": null, "description": "Thời điểm người nhận phản hồi (chấp nhận hoặc từ chối). Null nếu chưa phản hồi" }
+      ]
+    },
+    {
+      "table": "Follows",
+      "description": "Lưu quan hệ theo dõi một chiều giữa người dùng (không cần đồng ý)",
+      "fields": [
+        { "name": "follow_id",    "type": "BIGINT",   "key": "PK", "description": "ID duy nhất của lượt follow, tự tăng" },
+        { "name": "follower_id",  "type": "GUID",     "key": "FK", "description": "Người THEO DÕI (trỏ về Users)" },
+        { "name": "following_id", "type": "GUID",     "key": "FK", "description": "Người ĐƯỢC THEO DÕI (trỏ về Users)" },
+        { "name": "created_at",   "type": "DATETIME2","key": null, "description": "Thời điểm bắt đầu theo dõi" }
+      ]
+    },
+    {
+      "table": "BlockList",
+      "description": "Lưu danh sách người dùng bị chặn",
+      "fields": [
+        { "name": "block_id",   "type": "BIGINT",   "key": "PK", "description": "ID duy nhất của lượt chặn, tự tăng" },
+        { "name": "blocker_id", "type": "GUID",     "key": "FK", "description": "Người THỰC HIỆN chặn (trỏ về Users)" },
+        { "name": "blocked_id", "type": "GUID",     "key": "FK", "description": "Người BỊ CHẶN (trỏ về Users)" },
+        { "name": "reason",     "type": "NVARCHAR", "key": null, "description": "Lý do chặn. Có thể null nếu không nhập lý do" },
+        { "name": "created_at", "type": "DATETIME2","key": null, "description": "Thời điểm chặn" }
+      ]
+    }
+  ]
+}
