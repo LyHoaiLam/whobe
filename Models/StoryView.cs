@@ -1,7 +1,6 @@
 namespace whobe.Models;
 
-public class StoryView
-{
+public class StoryView {
     public long ViewId { get; set; }
     public Guid StoryId { get; set; }
     public Guid ViewerId { get; set; }

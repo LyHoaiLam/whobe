@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Story;
 
-public class CreateStoryDto
-{
+public class CreateStoryDto {
     public IFormFile? Media { get; set; }
     public int MediaType { get; set; } = 0;
     public string? TextContent { get; set; }

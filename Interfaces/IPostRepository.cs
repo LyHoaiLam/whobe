@@ -1,9 +1,7 @@
 using whobe.Models;
-
 namespace whobe.Interfaces;
 
-public interface IPostRepository : IGenericRepository<Post>
-{
+public interface IPostRepository : IGenericRepository<Post> {
     Task<Post?> GetPostWithDetailsAsync(Guid postId);
     Task<IEnumerable<Post>> GetNewsFeedAsync(Guid userId, int page, int pageSize);
     Task<IEnumerable<Post>> GetUserPostsAsync(Guid userId, int page, int pageSize);

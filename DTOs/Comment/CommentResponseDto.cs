@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Comment;
 
-public class CommentResponseDto
-{
+public class CommentResponseDto {
     public Guid CommentId { get; set; }
     public Guid PostId { get; set; }
     public Guid AuthorId { get; set; }

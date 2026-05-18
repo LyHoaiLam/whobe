@@ -1,10 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using whobe.Enums;
-
 namespace whobe.Models;
 
-public class User
-{
+public class User {
     public Guid UserId { get; set; } = Guid.NewGuid();
 
     [Required, MaxLength(50)]

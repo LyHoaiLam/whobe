@@ -11,8 +11,7 @@ namespace whobe.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class AuthController : ControllerBase
-{
+public class AuthController : ControllerBase {
     private readonly AppDbContext _context;
     private readonly IJwtService _jwtService;
 
@@ -22,8 +21,7 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("register")]
-    public async Task<IActionResult> Register(RegisterRequestDto dto)
-    {
+    public async Task<IActionResult> Register(RegisterRequestDto dto) {
         var usernameExists = await _context.Users
             .AnyAsync(x => x.Username == dto.Username);
 
@@ -38,8 +36,7 @@ public class AuthController : ControllerBase
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
-        var user = new User
-        {
+        var user = new User {
             Username = dto.Username,
             Email = dto.Email,
             PhoneNumber = dto.PhoneNumber,
@@ -51,8 +48,7 @@ public class AuthController : ControllerBase
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        return Ok(new
-        {
+        return Ok( new {
             status = 201,
             message = "Đăng ký thành công",
             userId = user.UserId
@@ -70,10 +66,8 @@ public class AuthController : ControllerBase
                 x.Username == dto.EmailOrUsername ||
                 x.Email == dto.EmailOrUsername);
 
-        if (user == null)
-        {
-            return Unauthorized(new
-            {
+        if (user == null) {
+            return Unauthorized(new {
                 status = 401,
                 message = "Tài khoản không tồn tại"
             });
@@ -82,10 +76,8 @@ public class AuthController : ControllerBase
         // 2. check password
         var isValidPassword = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
 
-        if (!isValidPassword)
-        {
-            return Unauthorized(new
-            {
+        if (!isValidPassword) {
+            return Unauthorized(new {
                 status = 401,
                 message = "Mật khẩu không đúng"
             });
@@ -96,8 +88,7 @@ public class AuthController : ControllerBase
         var refreshToken = _jwtService.GenerateRefreshToken();
 
         // 4. lưu refresh token (nếu bạn dùng bảng UserTokens)
-        _context.UserTokens.Add(new UserToken
-        {
+        _context.UserTokens.Add(new UserToken {
             UserId = user.UserId,
             TokenHash = refreshToken,
             TokenType = 1, // refresh token
@@ -109,8 +100,7 @@ public class AuthController : ControllerBase
         await _context.SaveChangesAsync();
 
         // 5. response
-        return Ok(new LoginResponseDto
-        {
+        return Ok(new LoginResponseDto {
             AccessToken = accessToken,
             RefreshToken = refreshToken,
             ExpiresAt = DateTime.UtcNow.AddMinutes(60),

@@ -9,14 +9,12 @@ using whobe.Models;
 namespace whobe.Services;
 
 //generate/validate access token + refresh token
-public class JwtService : IJwtService
-{
+public class JwtService : IJwtService {
     private readonly IConfiguration _config;
 
     public JwtService(IConfiguration config) => _config = config;
 
-    public string GenerateAccessToken(User user)
-    {
+    public string GenerateAccessToken(User user) {
         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Secret"]!));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expiry = DateTime.UtcNow.AddMinutes(

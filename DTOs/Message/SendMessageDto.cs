@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Message;
 
-public class SendMessageDto
-{
+public class SendMessageDto {
     public Guid ConversationId { get; set; }
     public string? Content { get; set; }
     public int MessageType { get; set; } = 0;

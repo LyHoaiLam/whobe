@@ -5,12 +5,10 @@ using System.Security.Claims;
 namespace whobe.Hubs;
 
 [Authorize]
-public class ChatHub : Hub
-{
+public class ChatHub : Hub {
     // Khi kết nối, join vào group theo userId
     // => có thể push tin nhắn đúng người bằng Clients.Group(userId)
-    public override async Task OnConnectedAsync()
-    {
+    public override async Task OnConnectedAsync() {
         var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!string.IsNullOrEmpty(userId))
             await Groups.AddToGroupAsync(Context.ConnectionId, userId);
@@ -18,8 +16,7 @@ public class ChatHub : Hub
         await base.OnConnectedAsync();
     }
 
-    public override async Task OnDisconnectedAsync(Exception? exception)
-    {
+    public override async Task OnDisconnectedAsync(Exception? exception) {
         var userId = Context.User?.FindFirstValue(ClaimTypes.NameIdentifier);
         if (!string.IsNullOrEmpty(userId))
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, userId);

@@ -1,7 +1,6 @@
 namespace whobe.Models;
 
-public class Conversation
-{
+public class Conversation {
     public Guid ConversationId { get; set; } = Guid.NewGuid();
 
     // 0=Direct(1-1), 1=Group

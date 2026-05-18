@@ -1,7 +1,6 @@
 namespace whobe.Models;
 
-public class Comment
-{
+public class Comment {
     public Guid CommentId { get; set; } = Guid.NewGuid();
     public Guid PostId { get; set; }
     public Guid AuthorId { get; set; }

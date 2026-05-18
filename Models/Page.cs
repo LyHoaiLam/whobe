@@ -1,7 +1,6 @@
 namespace whobe.Models;
 
-public class Page
-{
+public class Page {
     public Guid PageId { get; set; } = Guid.NewGuid();
     public string Name { get; set; } = null!;
     public string? Username { get; set; }
@@ -18,7 +17,6 @@ public class Page
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
-
     public User Owner { get; set; } = null!;
     public ICollection<Post> Posts { get; set; } = new List<Post>();
 }

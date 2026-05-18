@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Message;
 
-public class MessageResponseDto
-{
+public class MessageResponseDto {
     public long MessageId { get; set; }
     public Guid ConversationId { get; set; }
     public Guid SenderId { get; set; }

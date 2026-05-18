@@ -7,8 +7,7 @@ using whobe.Models;
 
 namespace whobe.Services;
 //comment + reply + react
-public class CommentService : ICommentService
-{
+public class CommentService : ICommentService {
     private readonly ICommentRepository _commentRepo;
     private readonly IPostRepository _postRepo;
     private readonly INotificationService _notifService;

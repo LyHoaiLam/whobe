@@ -1,7 +1,6 @@
 namespace whobe.Models;
 
-public class ConversationMember
-{
+public class ConversationMember {
     public long MemberId { get; set; }
     public Guid ConversationId { get; set; }
     public Guid UserId { get; set; }

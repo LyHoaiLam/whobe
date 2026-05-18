@@ -7,8 +7,7 @@ using whobe.Models;
 
 namespace whobe.Services;
 //gửi tin, tạo chat 1-1 / nhóm, mark as read, edit/delete
-public class MessageService : IMessageService
-{
+public class MessageService : IMessageService {
     private readonly IMessageRepository  _msgRepo;
     private readonly IFileStorageService _storage;
     private readonly INotificationService _notifService;
@@ -139,8 +138,7 @@ public class MessageService : IMessageService
     }
 
     public async Task<ConversationSummaryDto> CreateGroupConversationAsync(Guid creatorId, CreateGroupConversationDto dto) {
-        var conv = new Conversation
-        {
+        var conv = new Conversation {
             Type = 1,
             Name = dto.Name,
             CreatedBy = creatorId,

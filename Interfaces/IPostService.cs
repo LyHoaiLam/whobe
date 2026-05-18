@@ -1,10 +1,8 @@
 using whobe.DTOs.Common;
 using whobe.DTOs.Post;
-
 namespace whobe.Interfaces;
 
-public interface IPostService
-{
+public interface IPostService {
     Task<PostResponseDto> CreatePostAsync(Guid userId, CreatePostDto dto);
     Task<PostResponseDto?> GetByIdAsync(Guid postId, Guid currentUserId);
     Task<PagedResultDto<PostResponseDto>> GetNewsFeedAsync(Guid userId, int page, int pageSize);

@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Story;
 
-public class StoryGroupDto
-{
+public class StoryGroupDto {
     public Guid UserId { get; set; }
     public string UserName { get; set; } = null!;
     public string? UserAvatar { get; set; }

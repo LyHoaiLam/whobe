@@ -1,9 +1,7 @@
 using whobe.Enums;
-
 namespace whobe.Models;
 
-public class Post
-{
+public class Post {
     public Guid PostId { get; set; } = Guid.NewGuid();
     public Guid AuthorId { get; set; }
     public Guid? PageId { get; set; }

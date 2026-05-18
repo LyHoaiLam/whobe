@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Story;
 
-public class StoryResponseDto
-{
+public class StoryResponseDto {
     public Guid StoryId { get; set; }
     public Guid UserId { get; set; }
     public string UserName { get; set; } = null!;

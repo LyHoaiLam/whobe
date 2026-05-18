@@ -1,7 +1,6 @@
 namespace whobe.Models;
 
-public class UserToken
-{
+public class UserToken {
     public long TokenId { get; set; }
     public Guid UserId { get; set; }
 

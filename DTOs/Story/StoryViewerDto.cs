@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Story;
 
-public class StoryViewerDto
-{
+public class StoryViewerDto {
     public Guid ViewerId { get; set; }
     public string ViewerName { get; set; } = null!;
     public string? ViewerAvatar { get; set; }

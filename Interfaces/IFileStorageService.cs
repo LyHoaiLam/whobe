@@ -1,7 +1,6 @@
 namespace whobe.Interfaces;
 
-public interface IFileStorageService
-{
+public interface IFileStorageService {
     Task<string> UploadAsync(IFormFile file, string folder);
     Task<IEnumerable<string>> UploadManyAsync(IEnumerable<IFormFile> files, string folder);
     Task DeleteAsync(string fileUrl);

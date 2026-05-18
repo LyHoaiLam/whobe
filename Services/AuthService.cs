@@ -8,8 +8,7 @@ using whobe.Models;
 
 namespace whobe.Services;
 //register, login, refresh token (lưu hash vào DB), logout, đổi mật khẩu
-public class AuthService : IAuthService
-{
+public class AuthService : IAuthService {
     private readonly AppDbContext _db;
     private readonly IUserRepository _userRepo;
     private readonly IJwtService _jwt;

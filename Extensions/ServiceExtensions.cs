@@ -26,8 +26,7 @@ public static class ServiceExtensions {
                     ValidateIssuerSigningKey = true,
                     ValidIssuer = config["Jwt:Issuer"],
                     ValidAudience = config["Jwt:Audience"],
-                    IssuerSigningKey = new SymmetricSecurityKey(
-                        Encoding.UTF8.GetBytes(config["Jwt:Secret"]!))
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Secret"]!))
                 };
                 opts.Events = new JwtBearerEvents {
                     OnMessageReceived = ctx => {

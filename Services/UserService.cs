@@ -5,16 +5,15 @@ using whobe.Models;
 
 namespace whobe.Services;
 //profile, update avatar/cover, search, deactivate
-public class UserService : IUserService
-{
+public class UserService : IUserService {
     private readonly IUserRepository _userRepo;
     private readonly IFriendshipRepository _friendRepo;
     private readonly IFileStorageService _storage;
 
     public UserService(IUserRepository userRepo, IFriendshipRepository friendRepo, IFileStorageService storage) {
-        _userRepo   = userRepo;
+        _userRepo = userRepo;
         _friendRepo = friendRepo;
-        _storage    = storage;
+        _storage = storage;
     }
 
     public async Task<UserProfileDto?> GetProfileAsync(Guid userId, Guid currentUserId) {

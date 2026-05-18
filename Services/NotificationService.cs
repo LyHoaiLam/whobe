@@ -43,18 +43,15 @@ public class NotificationService : INotificationService {
         await _realtime.PushUnreadCountAsync(recipientId, unread);
     }
 
-    public async Task<PagedResultDto<NotificationDto>> GetByUserAsync(
-        Guid userId, int page, int pageSize)
-    {
+    public async Task<PagedResultDto<NotificationDto>> GetByUserAsync(Guid userId, int page, int pageSize) {
         var list  = await _notifRepo.GetByUserAsync(userId, page, pageSize);
         var total = await _notifRepo.CountUnreadAsync(userId);
 
-        return new PagedResultDto<NotificationDto>
-        {
-            Items      = list.Select(MapToDto),
+        return new PagedResultDto<NotificationDto> {
+            Items = list.Select(MapToDto),
             TotalCount = total,
-            Page       = page,
-            PageSize   = pageSize,
+            Page = page,
+            PageSize = pageSize,
         };
     }
 
@@ -64,35 +61,31 @@ public class NotificationService : INotificationService {
     public async Task MarkAsReadAsync(long notificationId, Guid userId) =>
         await _notifRepo.MarkAsReadAsync(notificationId);
 
-    public async Task MarkAllAsReadAsync(Guid userId)
-    {
+    public async Task MarkAllAsReadAsync(Guid userId) {
         await _notifRepo.MarkAllAsReadAsync(userId);
 
         // Reset badge về 0
         await _realtime.PushUnreadCountAsync(userId, 0);
     }
 
-    public async Task DeleteAsync(long notificationId, Guid userId)
-    {
+    public async Task DeleteAsync(long notificationId, Guid userId) {
         var notif = await _notifRepo.GetByIdAsync(notificationId);
-        if (notif != null && notif.RecipientId == userId)
-        {
+        if (notif != null && notif.RecipientId == userId) {
             await _notifRepo.DeleteAsync(notif);
             await _notifRepo.SaveChangesAsync();
         }
     }
 
-    private static NotificationDto MapToDto(Notification n) => new()
-    {
+    private static NotificationDto MapToDto(Notification n) => new() {
         NotificationId = n.NotificationId,
-        ActorId        = n.ActorId,
-        ActorName      = n.Actor?.FullName,
-        ActorAvatar    = n.Actor?.AvatarUrl,
-        Type           = (int)n.Type,
-        EntityType     = n.EntityType,
-        EntityId       = n.EntityId,
-        Message        = n.Message,
-        IsRead         = n.IsRead,
-        CreatedAt      = n.CreatedAt,
+        ActorId = n.ActorId,
+        ActorName = n.Actor?.FullName,
+        ActorAvatar = n.Actor?.AvatarUrl,
+        Type = (int)n.Type,
+        EntityType = n.EntityType,
+        EntityId = n.EntityId,
+        Message = n.Message,
+        IsRead = n.IsRead,
+        CreatedAt = n.CreatedAt,
     };
 }

@@ -1,7 +1,6 @@
 namespace whobe.DTOs.User;
 
-public class UserProfileDto
-{
+public class UserProfileDto {
     public Guid UserId { get; set; }
     public string Username { get; set; } = null!;
     public string FullName { get; set; } = null!;

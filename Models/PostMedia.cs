@@ -1,7 +1,6 @@
 namespace whobe.Models;
 
-public class PostMedia
-{
+public class PostMedia {
     public long MediaId { get; set; }
     public Guid PostId { get; set; }
     public string MediaUrl { get; set; } = null!;
@@ -13,6 +12,5 @@ public class PostMedia
     public int? FileSizeKb { get; set; }
     public byte SortOrder { get; set; } = 0;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
-
     public Post Post { get; set; } = null!;
 }

@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Report;
 
-public class ReportResponseDto
-{
+public class ReportResponseDto {
     public long ReportId { get; set; }
     public Guid ReporterId { get; set; }
     public string ReporterName { get; set; } = null!;

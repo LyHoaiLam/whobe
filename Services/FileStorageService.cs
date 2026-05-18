@@ -2,8 +2,7 @@ using whobe.Interfaces;
 
 namespace whobe.Services;
 //upload file vào wwwroot/uploads, validate size/type
-public class FileStorageService : IFileStorageService
-{
+public class FileStorageService : IFileStorageService {
     private readonly IConfiguration _config;
     private readonly IWebHostEnvironment _env;
 

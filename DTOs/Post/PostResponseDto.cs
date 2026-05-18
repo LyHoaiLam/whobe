@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Post;
 
-public class PostResponseDto
-{
+public class PostResponseDto {
     public Guid PostId { get; set; }
     public Guid AuthorId { get; set; }
     public string AuthorName { get; set; } = null!;

@@ -1,7 +1,6 @@
 namespace whobe.Models;
 
-public class Share
-{
+public class Share {
     public long ShareId { get; set; }
     public Guid UserId { get; set; }
     public Guid PostId { get; set; }

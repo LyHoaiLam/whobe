@@ -1,9 +1,7 @@
 using whobe.Models;
-
 namespace whobe.Interfaces;
 
-public interface IMessageRepository : IGenericRepository<Message>
-{
+public interface IMessageRepository : IGenericRepository<Message> {
     Task<IEnumerable<Message>> GetConversationMessagesAsync(Guid conversationId, int page, int pageSize);
     Task<Message?> GetWithDetailsAsync(long messageId);
     Task<IEnumerable<Conversation>> GetUserConversationsAsync(Guid userId);

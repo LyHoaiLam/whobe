@@ -1,9 +1,7 @@
 using System.ComponentModel.DataAnnotations;
-
 namespace whobe.Models;
 
-public class Feeling
-{
+public class Feeling {
     public int FeelingId { get; set; }
 
     [Required, MaxLength(50)]

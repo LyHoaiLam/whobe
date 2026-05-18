@@ -1,10 +1,8 @@
 using whobe.DTOs.Common;
 using whobe.DTOs.User;
-
 namespace whobe.Interfaces;
 
-public interface IUserService
-{
+public interface IUserService {
     Task<UserProfileDto?> GetProfileAsync(Guid userId, Guid currentUserId);
     Task<UserProfileDto> UpdateProfileAsync(Guid userId, UpdateProfileDto dto);
     Task<bool> UpdateAvatarAsync(Guid userId, IFormFile file);

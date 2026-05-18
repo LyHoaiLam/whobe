@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Post;
 
-public class CreatePostDto
-{
+public class CreatePostDto {
     public string? Content { get; set; }
     public int Privacy { get; set; } = 0;
     public Guid? GroupId { get; set; }

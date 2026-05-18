@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Page;
 
-public class PageResponseDto
-{
+public class PageResponseDto {
     public Guid PageId { get; set; }
     public string Name { get; set; } = null!;
     public string? Username { get; set; }

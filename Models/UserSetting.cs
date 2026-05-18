@@ -1,7 +1,6 @@
 namespace whobe.Models;
 
-public class UserSettings
-{
+public class UserSettings {
     public long SettingId { get; set; }
     public Guid UserId { get; set; }
     public string Language { get; set; } = "vi";

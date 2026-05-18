@@ -6,11 +6,9 @@ namespace whobe.Interfaces;
 
 public interface IFriendshipService {
     Task SendRequestAsync(Guid requesterId, Guid receiverId);
-
     // long vì FriendshipId trong model là long
     Task AcceptRequestAsync(long friendshipId, Guid userId);
     Task DeclineRequestAsync(long friendshipId, Guid userId);
-
     Task UnfriendAsync(Guid userId, Guid friendId);
     Task CancelRequestAsync(Guid requesterId, Guid receiverId);
     Task BlockAsync(Guid blockerId, Guid blockedId);

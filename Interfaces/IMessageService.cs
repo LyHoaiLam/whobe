@@ -3,8 +3,7 @@ using whobe.DTOs.Message;
 
 namespace whobe.Interfaces;
 
-public interface IMessageService
-{
+public interface IMessageService {
     Task<MessageResponseDto> SendAsync(Guid senderId, SendMessageDto dto);
     Task<PagedResultDto<MessageResponseDto>> GetConversationAsync(Guid conversationId, Guid userId, int page, int pageSize);
     Task<IEnumerable<ConversationSummaryDto>> GetUserConversationsAsync(Guid userId);

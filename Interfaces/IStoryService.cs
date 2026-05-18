@@ -1,9 +1,7 @@
 using whobe.DTOs.Story;
-
 namespace whobe.Interfaces;
 
-public interface IStoryService
-{
+public interface IStoryService {
     Task<StoryResponseDto> CreateAsync(Guid userId, CreateStoryDto dto);
     Task<IEnumerable<StoryGroupDto>> GetFriendsStoriesAsync(Guid userId);
     Task<IEnumerable<StoryResponseDto>> GetUserStoriesAsync(Guid profileUserId, Guid currentUserId);

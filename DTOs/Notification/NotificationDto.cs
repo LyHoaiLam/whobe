@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Notification;
 
-public class NotificationDto
-{
+public class NotificationDto {
     public long NotificationId { get; set; }
     public Guid? ActorId { get; set; }
     public string? ActorName { get; set; }

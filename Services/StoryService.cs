@@ -4,8 +4,7 @@ using whobe.Models;
 
 namespace whobe.Services;
 //đăng story, xem, react, group theo user cho newsfeed
-public class StoryService : IStoryService
-{
+public class StoryService : IStoryService {
     private readonly IStoryRepository _storyRepo;
     private readonly IFileStorageService _storage;
 

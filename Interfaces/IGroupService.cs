@@ -1,11 +1,9 @@
 using whobe.DTOs.Common;
 using whobe.DTOs.Group;
 using whobe.DTOs.User;
-
 namespace whobe.Interfaces;
 
-public interface IGroupService
-{
+public interface IGroupService {
     Task<GroupResponseDto> CreateAsync(Guid userId, CreateGroupDto dto);
     Task<GroupResponseDto?> GetByIdAsync(Guid groupId, Guid currentUserId);
     Task<GroupResponseDto> UpdateAsync(Guid groupId, Guid userId, UpdateGroupDto dto);

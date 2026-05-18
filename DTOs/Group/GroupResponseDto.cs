@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Group;
 
-public class GroupResponseDto
-{
+public class GroupResponseDto {
     public Guid GroupId { get; set; }
     public string Name { get; set; } = null!;
     public string? Description { get; set; }

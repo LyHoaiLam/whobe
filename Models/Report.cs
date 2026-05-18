@@ -1,7 +1,6 @@
 namespace whobe.Models;
 
-public class Report
-{
+public class Report {
     public long ReportId { get; set; }
     public Guid ReporterId { get; set; }
 
@@ -18,7 +17,6 @@ public class Report
     public Guid? ReviewedBy { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ResolvedAt { get; set; }
-
     public User Reporter { get; set; } = null!;
     public User? Reviewer { get; set; }
 }

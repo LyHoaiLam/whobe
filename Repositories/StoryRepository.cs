@@ -15,8 +15,7 @@ public class StoryRepository : GenericRepository<Story>, IStoryRepository {
             .OrderByDescending(s => s.CreatedAt)
             .ToListAsync();
 
-    public async Task<IEnumerable<Story>> GetFriendsStoriesAsync(Guid userId)
-    {
+    public async Task<IEnumerable<Story>> GetFriendsStoriesAsync(Guid userId) {
         var friendIds = await _db.Friendships
             .Where(f => f.Status == Enums.FriendshipStatus.Accepted &&
                 (f.RequesterId == userId || f.ReceiverId == userId))

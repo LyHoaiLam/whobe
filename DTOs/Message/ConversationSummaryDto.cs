@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Message;
 
-public class ConversationSummaryDto
-{
+public class ConversationSummaryDto {
     public Guid ConversationId { get; set; }
     public int Type { get; set; }
     public string? Name { get; set; }
@@ -12,8 +11,7 @@ public class ConversationSummaryDto
     public List<MemberSnapshotDto> Members { get; set; } = new();
 }
 
-public class MemberSnapshotDto
-{
+public class MemberSnapshotDto {
     public Guid UserId { get; set; }
     public string FullName { get; set; } = null!;
     public string? AvatarUrl { get; set; }
