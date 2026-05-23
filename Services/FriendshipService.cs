@@ -25,6 +25,38 @@ public class FriendshipService : IFriendshipService {
         _db = db;
     }
 
+
+    // ── Lấy danh sách bạn ──────────────────────────────
+public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
+    // Lấy những friendship mà mình là Requester
+    var requesterSide = await _db.Friendships
+        .Where(friend => friend.Status == FriendshipStatus.Accepted && friend.RequesterId == userId)
+        .Select(friend => friend.Receiver)
+        .Where(user => user.IsActive)
+        .ToListAsync();
+
+    // Lấy những friendship mà mình là Receiver
+    var receiverSide = await _db.Friendships
+        .Where(friend => friend.Status == FriendshipStatus.Accepted && friend.ReceiverId == userId)
+        .Select(friend => friend.Requester)
+        .Where(user => user.IsActive)
+        .ToListAsync();
+
+    // Gộp 2 danh sách lại
+    var friends = requesterSide.Concat(receiverSide);
+
+    return friends.Select(user => new UserProfileDto {
+        UserId = user.UserId,
+        Username = user.Username,
+        FullName = user.FullName,
+        AvatarUrl = user.AvatarUrl,
+        CreatedAt = user.CreatedAt
+    });
+}
+
+
+
+
     // ── Gửi lời mời kết bạn ──────────────────────────────
     public async Task SendRequestAsync(Guid requesterId, Guid receiverId) {
         if (requesterId == receiverId)

@@ -3,6 +3,7 @@
 using whobe.Hubs;
 using whobe.Extensions;
 using Microsoft.OpenApi.Models;
+using whobe.Middlewares;
 // using whobe.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -17,6 +18,17 @@ builder.Services.AddAppServices();
 
 // JWT AUTH
 builder.Services.AddJwtAuth(builder.Configuration);
+
+builder.Services.AddCors(options => {
+    options.AddPolicy("NextFrontend", policy => {
+        policy
+            .WithOrigins("http://localhost:3000")
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials();
+    });
+});
+
 
 // CONTROLLERS + SWAGGER
 builder.Services.AddControllers();
@@ -57,8 +69,14 @@ if (app.Environment.IsDevelopment()) {
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-// app.UseMiddleware<ExceptionMiddleware>(); 
+app.UseMiddleware<ExceptionMiddleware>(); 
 app.UseHttpsRedirection();
+
+app.UseRouting();
+
+app.UseCors("NextFrontend");
+
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
