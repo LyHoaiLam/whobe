@@ -22,7 +22,12 @@ builder.Services.AddJwtAuth(builder.Configuration);
 builder.Services.AddCors(options => {
     options.AddPolicy("NextFrontend", policy => {
         policy
-            .WithOrigins("http://localhost:3000")
+            // .WithOrigins("http://localhost:3000")
+            // .AllowAnyHeader()
+            // .AllowAnyMethod()
+            // .AllowCredentials();
+            .WithOrigins("http://localhost:3000", "https://localhost:3000")
+            // .AllowAnyOrigin()
             .AllowAnyHeader()
             .AllowAnyMethod()
             .AllowCredentials();
@@ -71,12 +76,8 @@ if (app.Environment.IsDevelopment()) {
 }
 app.UseMiddleware<ExceptionMiddleware>(); 
 app.UseHttpsRedirection();
-
 app.UseRouting();
-
 app.UseCors("NextFrontend");
-
-
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

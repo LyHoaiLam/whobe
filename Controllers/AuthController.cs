@@ -20,19 +20,20 @@ public class AuthController : ControllerBase {
         _jwtService = jwtService;
     }
 
+// =========================
+// REGISTER API
+// =========================
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterRequestDto dto) {
-        var usernameExists = await _context.Users
-            .AnyAsync(x => x.Username == dto.Username);
+        var usernameExists = await _context.Users.AnyAsync(x => x.Username == dto.Username);
 
         if (usernameExists)
-            return BadRequest(new { status = 400, message = "Username đã tồn tại" });
+            return BadRequest(new { status = 400, message = "The username already exists" });
 
-        var emailExists = await _context.Users
-            .AnyAsync(x => x.Email == dto.Email);
+        var emailExists = await _context.Users.AnyAsync(x => x.Email == dto.Email);
 
         if (emailExists)
-            return BadRequest(new { status = 400, message = "Email đã tồn tại" });
+            return BadRequest(new { status = 400, message = "The email already exists." });
 
         var passwordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password);
 
@@ -50,26 +51,24 @@ public class AuthController : ControllerBase {
 
         return Ok( new {
             status = 201,
-            message = "Đăng ký thành công",
-            userId = user.UserId
+            message = "Registration successful",
+            // userId = user.UserId
         });
     }
 
-    // =========================
-    // LOGIN API
-    // =========================
+// =========================
+// LOGIN API
+// =========================
     [HttpPost("login")]
     public async Task<IActionResult> Login(LoginRequestDto dto) {
         // 1. tìm user theo username hoặc email
         var user = await _context.Users
-            .FirstOrDefaultAsync(x =>
-                x.Username == dto.EmailOrUsername ||
-                x.Email == dto.EmailOrUsername);
+            .FirstOrDefaultAsync(x => x.Username == dto.EmailOrUsername || x.Email == dto.EmailOrUsername);
 
         if (user == null) {
             return Unauthorized(new {
                 status = 401,
-                message = "Tài khoản không tồn tại"
+                message = "The account does not exist."
             });
         }
 
@@ -79,7 +78,7 @@ public class AuthController : ControllerBase {
         if (!isValidPassword) {
             return Unauthorized(new {
                 status = 401,
-                message = "Mật khẩu không đúng"
+                message = "Incorrect password"
             });
         }
 
@@ -112,7 +111,7 @@ public class AuthController : ControllerBase {
     }
 
 
-    // =========================
+// =========================
 // GET ME (require JWT)
 // =========================
     [Authorize]

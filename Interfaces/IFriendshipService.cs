@@ -1,5 +1,6 @@
 using whobe.DTOs.Common;
 using whobe.DTOs.User;
+using whobe.DTOs.User; 
 using whobe.Enums;
 
 namespace whobe.Interfaces;
@@ -16,7 +17,7 @@ public interface IFriendshipService {
     Task FollowAsync(Guid followerId, Guid followingId);
     Task UnfollowAsync(Guid followerId, Guid followingId);
     Task<FriendshipStatus?> GetStatusAsync(Guid userAId, Guid userBId);
-    Task<PagedResultDto<UserProfileDto>> GetPendingRequestsAsync(Guid userId);
+    Task<PagedResultDto<PendingRequestDto>> GetPendingRequestsAsync(Guid userId);   // ← đổi dòng này
     Task<IEnumerable<UserProfileDto>> GetSuggestedFriendsAsync(Guid userId, int count = 10);
     Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId);
 }

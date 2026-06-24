@@ -115,7 +115,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         if (friendship.Status != FriendshipStatus.Pending)
             throw new Exception("Lời mời không hợp lệ.");
 
-        friendship.Status      = FriendshipStatus.Accepted;
+        friendship.Status = FriendshipStatus.Accepted;
         friendship.RespondedAt = DateTime.UtcNow;
         await _friendRepo.SaveChangesAsync();
 
@@ -231,21 +231,23 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
     public async Task<FriendshipStatus?> GetStatusAsync(Guid userAId, Guid userBId) =>
         await _friendRepo.GetStatusAsync(userAId, userBId);
 
-    public async Task<PagedResultDto<UserProfileDto>> GetPendingRequestsAsync(Guid userId) {
-        var list = await _friendRepo.GetPendingRequestsAsync(userId);
-        return new PagedResultDto<UserProfileDto> {
-            Items = list.Select(f => new UserProfileDto {
-                UserId = f.Requester.UserId,
-                Username = f.Requester.Username,
-                FullName = f.Requester.FullName,
-                AvatarUrl = f.Requester.AvatarUrl,
-                CreatedAt = f.CreatedAt,
-            }),
-            TotalCount = list.Count(),
-            Page = 1,
-            PageSize = 100,
-        };
-    }
+ public async Task<PagedResultDto<PendingRequestDto>> GetPendingRequestsAsync(Guid userId) {
+    var list = await _friendRepo.GetPendingRequestsAsync(userId);
+    return new PagedResultDto<PendingRequestDto> {
+        Items = list.Select(f => new PendingRequestDto {
+            FriendshipId = f.FriendshipId,
+            UserId = f.Requester.UserId,
+            Username = f.Requester.Username,
+            FullName = f.Requester.FullName,
+            AvatarUrl = f.Requester.AvatarUrl,
+            CreatedAt = f.CreatedAt,
+        }),
+        TotalCount = list.Count(),
+        Page = 1,
+        PageSize = 100,
+    };
+}
+
 
     public async Task<IEnumerable<UserProfileDto>> GetSuggestedFriendsAsync(Guid userId, int count = 10) {
         // Lấy danh sách bạn hiện tại + bản thân
