@@ -30,7 +30,7 @@ public class CommentService : ICommentService {
             mediaUrl = await UploadCommentMedia(dto.Media, postId);
 
         var comment = new Comment {
-            PostId   = postId,
+            PostId = postId,
             AuthorId = userId,
             Content  = dto.Content,
             MediaUrl = mediaUrl,

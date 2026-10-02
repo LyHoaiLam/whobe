@@ -4,33 +4,38 @@ using whobe.DTOs.Common;
 using whobe.DTOs.Message;
 using whobe.Interfaces;
 using whobe.Models;
-
+using Microsoft.AspNetCore.SignalR;
+using whobe.Hubs;
 namespace whobe.Services;
-//gửi tin, tạo chat 1-1 / nhóm, mark as read, edit/delete
 public class MessageService : IMessageService {
     private readonly IMessageRepository  _msgRepo;
     private readonly IFileStorageService _storage;
     private readonly INotificationService _notifService;
+    private readonly IHubContext<ChatHub> _chatHub; //chat realtime
     private readonly AppDbContext _db;
 
-    public MessageService(IMessageRepository msgRepo, IFileStorageService storage, INotificationService notifService, AppDbContext db) {
+    public MessageService(IMessageRepository msgRepo, IFileStorageService storage, INotificationService notifService, AppDbContext db, IHubContext<ChatHub> chatHub) {
         _msgRepo = msgRepo;
         _storage = storage;
         _notifService = notifService;
         _db = db;
+        _chatHub = chatHub;
     }
 
-    public async Task<MessageResponseDto> SendAsync(Guid senderId, SendMessageDto dto) {
-        // Kiểm tra conversation tồn tại và sender là member
+
+    public async Task<MessageResponseDto> SendAsync(Guid senderId, SendMessageDto dto)
+    {
+        // Không có content thì không gửi
+        if (string.IsNullOrWhiteSpace(dto.Content))
+        {
+            throw new Exception("Nội dung tin nhắn không được để trống.");
+        }
+
         var conv = await _msgRepo.GetConversationWithMembersAsync(dto.ConversationId)
             ?? throw new Exception("Cuộc hội thoại không tồn tại.");
 
         if (!conv.Members.Any(m => m.UserId == senderId))
             throw new Exception("Bạn không phải thành viên của cuộc hội thoại này.");
-
-        string? mediaUrl = null;
-        if (dto.Media != null)
-            mediaUrl = await _storage.UploadAsync(dto.Media, "messages");
 
         var message = new Message {
             ConversationId = dto.ConversationId,
@@ -38,28 +43,36 @@ public class MessageService : IMessageService {
             ReplyToId = dto.ReplyToId,
             MessageType = (Enums.MessageType)dto.MessageType,
             Content = dto.Content,
-            MediaUrl = mediaUrl,
         };
 
         await _db.Messages.AddAsync(message);
 
-        // Cập nhật LastMessageId và UpdatedAt của conversation
         conv.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 
         conv.LastMessageId = message.MessageId;
         await _db.SaveChangesAsync();
 
-        // Thông báo cho các member khác
         foreach (var member in conv.Members.Where(m => m.UserId != senderId)) {
             await _notifService.CreateAsync(
-                member.UserId, senderId,
-                Enums.NotificationType.Message, 3, dto.ConversationId);
+                member.UserId,
+                senderId,
+                Enums.NotificationType.Message,
+                3,
+                dto.ConversationId
+            );
         }
 
         var full = await _msgRepo.GetWithDetailsAsync(message.MessageId);
-        return MapToDto(full!, false);
+
+        var response = MapToDto(full!, false);
+
+        await _chatHub.Clients.Group($"conv_{dto.ConversationId}").SendAsync("ReceiveMessage", response);
+
+        return response;
     }
+
+
 
     public async Task<PagedResultDto<MessageResponseDto>> GetConversationAsync(Guid conversationId, Guid userId, int page, int pageSize) {
         var conv = await _msgRepo.GetConversationWithMembersAsync(conversationId)
@@ -69,7 +82,7 @@ public class MessageService : IMessageService {
             throw new Exception("Bạn không có quyền xem cuộc hội thoại này.");
 
         var messages = await _msgRepo.GetConversationMessagesAsync(conversationId, page, pageSize);
-        var member   = conv.Members.First(m => m.UserId == userId);
+        var member = conv.Members.First(m => m.UserId == userId);
 
         return new PagedResultDto<MessageResponseDto> {
             Items = messages.Select(m =>
@@ -118,6 +131,7 @@ public class MessageService : IMessageService {
         return result;
     }
 
+
     public async Task<ConversationSummaryDto> GetOrCreateDirectAsync(Guid userAId, Guid userBId) {
         var existing = await _msgRepo.GetDirectConversationAsync(userAId, userBId);
         if (existing != null)
@@ -137,6 +151,7 @@ public class MessageService : IMessageService {
         return await ToSummary(full!, userAId);
     }
 
+
     public async Task<ConversationSummaryDto> CreateGroupConversationAsync(Guid creatorId, CreateGroupConversationDto dto) {
         var conv = new Conversation {
             Type = 1,
@@ -150,10 +165,11 @@ public class MessageService : IMessageService {
         if (!memberIds.Contains(creatorId)) memberIds.Add(creatorId);
 
         _db.ConversationMembers.AddRange(memberIds.Select(id =>
-            new ConversationMember {
+            new ConversationMember
+            {
                 ConversationId = conv.ConversationId,
                 UserId = id,
-                Role   = (byte)(id == creatorId ? 2 : 0), // 2=Owner
+                Role = (byte)(id == creatorId ? 2 : 0), // 2=Owner
             }));
         await _db.SaveChangesAsync();
 
@@ -161,21 +177,21 @@ public class MessageService : IMessageService {
         return await ToSummary(full!, creatorId);
     }
 
+
     public async Task MarkAsReadAsync(Guid conversationId, Guid userId) =>
         await _msgRepo.MarkMessagesAsReadAsync(conversationId, userId);
 
-    public async Task<int> GetUnreadCountAsync(Guid userId) =>
-        await _msgRepo.CountUnreadAsync(userId);
+    public async Task<int> GetUnreadCountAsync(Guid userId) => await _msgRepo.CountUnreadAsync(userId);
 
     public async Task DeleteMessageAsync(long messageId, Guid userId) {
-        var msg = await _db.Messages.FindAsync(messageId)
-            ?? throw new Exception("Tin nhắn không tồn tại.");
+        var msg = await _db.Messages.FindAsync(messageId) ?? throw new Exception("Tin nhắn không tồn tại.");
         if (msg.SenderId != userId)
             throw new Exception("Bạn không có quyền xóa tin nhắn này.");
         msg.IsDeleted = true;
         msg.Content   = null;
         await _db.SaveChangesAsync();
     }
+
 
     public async Task<MessageResponseDto> EditMessageAsync(long messageId, Guid userId, string newContent) {
         var msg = await _db.Messages
@@ -186,17 +202,17 @@ public class MessageService : IMessageService {
         if (msg.SenderId != userId)
             throw new Exception("Bạn không có quyền chỉnh sửa tin nhắn này.");
 
-        msg.Content  = newContent;
+        msg.Content = newContent;
         msg.EditedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
         return MapToDto(msg, false);
     }
 
-    // ── Helpers ──────────────────────────────────────────
 
+    // ── Helpers ──────────────────────────────────────────
     private async Task<ConversationSummaryDto> ToSummary(Conversation conv, Guid userId) {
-        var member  = conv.Members.FirstOrDefault(m => m.UserId == userId);
-        var unread  = member == null ? 0 : await _db.Messages.CountAsync(m =>
+        var member = conv.Members.FirstOrDefault(m => m.UserId == userId);
+        var unread = member == null ? 0 : await _db.Messages.CountAsync(m =>
             m.ConversationId == conv.ConversationId &&
             m.SenderId != userId && !m.IsDeleted &&
             m.SentAt > (member.LastReadAt ?? DateTime.MinValue));
@@ -204,7 +220,7 @@ public class MessageService : IMessageService {
         string? name = conv.Name, avatar = conv.AvatarUrl;
         if (conv.Type == 0) {
             var other = conv.Members.FirstOrDefault(m => m.UserId != userId)?.User;
-            name  = other?.FullName;
+            name = other?.FullName;
             avatar = other?.AvatarUrl;
         }
 
@@ -221,6 +237,7 @@ public class MessageService : IMessageService {
             }).ToList(),
         };
     }
+
 
     private static MessageResponseDto MapToDto(Message m, bool isUnread) => new() {
         MessageId = m.MessageId,
@@ -239,3 +256,4 @@ public class MessageService : IMessageService {
         EditedAt = m.EditedAt,
     };
 }
+
