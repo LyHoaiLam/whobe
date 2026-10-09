@@ -71,6 +71,10 @@ protected override void OnModelCreating(ModelBuilder modelBuilder) {
         .WithMany()
         .HasForeignKey(c => c.LastMessageId)
         .OnDelete(DeleteBehavior.Restrict);
+    modelBuilder.Entity<Conversation>()
+        .HasIndex(c => c.DirectKey)
+        .IsUnique()
+        .HasFilter("[DirectKey] IS NOT NULL");
     modelBuilder.Entity<Message>()
         .HasOne(m => m.Conversation)
         .WithMany(c => c.Messages)

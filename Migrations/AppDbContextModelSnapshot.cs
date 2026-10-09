@@ -108,6 +108,9 @@ namespace whobe.Migrations
                     b.Property<Guid?>("CreatedBy")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("DirectKey")
+                        .HasColumnType("nvarchar(450)");
+
                     b.Property<long?>("LastMessageId")
                         .HasColumnType("bigint");
 
@@ -123,6 +126,10 @@ namespace whobe.Migrations
                     b.HasKey("ConversationId");
 
                     b.HasIndex("CreatedBy");
+
+                    b.HasIndex("DirectKey")
+                        .IsUnique()
+                        .HasFilter("[DirectKey] IS NOT NULL");
 
                     b.HasIndex("LastMessageId");
 

@@ -9,4 +9,5 @@ public interface IMessageRepository : IGenericRepository<Message> {
     Task<Conversation?> GetConversationWithMembersAsync(Guid conversationId);
     Task MarkMessagesAsReadAsync(Guid conversationId, Guid userId);
     Task<int> CountUnreadAsync(Guid userId);
+    Task<Conversation?> GetDirectConversationByKeyAsync(string directKey);
 }

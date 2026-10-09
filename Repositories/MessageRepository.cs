@@ -72,4 +72,16 @@ public class MessageRepository : GenericRepository<Message>, IMessageRepository 
         }
         return total;
     }
+
+    public async Task<Conversation?> GetDirectConversationByKeyAsync(
+    string directKey) {
+        return await _db.Conversations
+            .Include(x => x.Members)
+            .FirstOrDefaultAsync(x =>
+                x.Type == 0 &&
+                x.DirectKey == directKey
+            );
+    }
+
+
 }

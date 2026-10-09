@@ -1,7 +1,6 @@
 namespace whobe.DTOs.Message;
 
-public class ConversationDto
-{
+public class ConversationDto {
     public Guid ConversationId { get; set; }
     public string? Name { get; set; }
     public bool IsGroup { get; set; }
@@ -11,8 +10,7 @@ public class ConversationDto
     public DateTime UpdatedAt { get; set; }
 }
 
-public class ConversationMemberDto
-{
+public class ConversationMemberDto {
     public Guid UserId { get; set; }
     public string Username  { get; set; } = null!;
     public string FullName  { get; set; } = null!;

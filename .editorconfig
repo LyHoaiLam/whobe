@@ -1,0 +1,18 @@
+root = true
+
+[*.cs]
+
+# Braces cùng dòng (không có dấu { xuống dưới)
+csharp_new_line_before_open_brace = none
+
+# Không tự thêm newline trước {
+csharp_new_line_before_members_in_chained_calls = false
+
+# Format code
+indent_style = space
+indent_size = 4
+tab_width = 4
+
+# Using
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false

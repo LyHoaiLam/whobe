@@ -16,4 +16,7 @@ public class Conversation {
     public Message? LastMessage { get; set; }
     public ICollection<ConversationMember> Members { get; set; } = new List<ConversationMember>();
     public ICollection<Message> Messages { get; set; } = new List<Message>();
+
+    // NEW
+    public string? DirectKey { get; set; }
 }

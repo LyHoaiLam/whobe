@@ -23,11 +23,22 @@ public class MessageService : IMessageService {
     }
 
 
-    public async Task<MessageResponseDto> SendAsync(Guid senderId, SendMessageDto dto)
-    {
+    private static string CreateDirectKey(Guid userAId, Guid userBId) {
+        var first = userAId.CompareTo(userBId) < 0
+            ? userAId
+            : userBId;
+
+        var second = userAId.CompareTo(userBId) < 0
+            ? userBId
+            : userAId;
+
+        return $"{first}:{second}";
+    }
+
+
+    public async Task<MessageResponseDto> SendAsync(Guid senderId, SendMessageDto dto) {
         // Không có content thì không gửi
-        if (string.IsNullOrWhiteSpace(dto.Content))
-        {
+        if (string.IsNullOrWhiteSpace(dto.Content)) {
             throw new Exception("Nội dung tin nhắn không được để trống.");
         }
 
@@ -74,6 +85,7 @@ public class MessageService : IMessageService {
 
 
 
+    // ====================================== Conversation BY "conversationId" ======================================
     public async Task<PagedResultDto<MessageResponseDto>> GetConversationAsync(Guid conversationId, Guid userId, int page, int pageSize) {
         var conv = await _msgRepo.GetConversationWithMembersAsync(conversationId)
             ?? throw new Exception("Cuộc hội thoại không tồn tại.");
@@ -85,13 +97,14 @@ public class MessageService : IMessageService {
         var member = conv.Members.First(m => m.UserId == userId);
 
         return new PagedResultDto<MessageResponseDto> {
-            Items = messages.Select(m =>
-                MapToDto(m, m.SentAt > (member.LastReadAt ?? DateTime.MinValue))),
+            Items = messages.Select(m => MapToDto(m, m.SentAt > (member.LastReadAt ?? DateTime.MinValue))),
             TotalCount = messages.Count(),
             Page = page,
             PageSize = pageSize,
         };
     }
+    // ========================================================================
+
 
     public async Task<IEnumerable<ConversationSummaryDto>> GetUserConversationsAsync(Guid userId) {
         var convs = await _msgRepo.GetUserConversationsAsync(userId);
@@ -109,7 +122,7 @@ public class MessageService : IMessageService {
             string? avatar = conv.AvatarUrl;
             if (conv.Type == 0) {
                 var other = conv.Members.FirstOrDefault(m => m.UserId != userId)?.User;
-                name   = other?.FullName;
+                name = other?.FullName;
                 avatar = other?.AvatarUrl;
             }
 
@@ -122,7 +135,7 @@ public class MessageService : IMessageService {
                 LastMessageAt = conv.LastMessage?.SentAt,
                 UnreadCount = unread,
                 Members = conv.Members.Select(m => new MemberSnapshotDto {
-                    UserId   = m.UserId,
+                    UserId = m.UserId,
                     FullName = m.User?.FullName ?? "",
                     AvatarUrl = m.User?.AvatarUrl,
                 }).ToList(),
@@ -132,25 +145,101 @@ public class MessageService : IMessageService {
     }
 
 
-    public async Task<ConversationSummaryDto> GetOrCreateDirectAsync(Guid userAId, Guid userBId) {
-        var existing = await _msgRepo.GetDirectConversationAsync(userAId, userBId);
-        if (existing != null)
-            return await ToSummary(existing, userAId);
+    // public async Task<ConversationSummaryDto> GetOrCreateDirectAsync(Guid userAId, Guid userBId) {
+    //     var existing = await _msgRepo.GetDirectConversationAsync(userAId, userBId);
+    //     if (existing != null)
+    //         return await ToSummary(existing, userAId);
 
-        var conv = new Conversation { Type = 0, CreatedBy = userAId };
+    //     var conv = new Conversation { Type = 0, CreatedBy = userAId };
+    //     _db.Conversations.Add(conv);
+    //     await _db.SaveChangesAsync();
+
+    //     _db.ConversationMembers.AddRange(
+    //         new ConversationMember { ConversationId = conv.ConversationId, UserId = userAId },
+    //         new ConversationMember { ConversationId = conv.ConversationId, UserId = userBId }
+    //     );
+    //     await _db.SaveChangesAsync();
+
+    //     var full = await _msgRepo.GetConversationWithMembersAsync(conv.ConversationId);
+    //     return await ToSummary(full!, userAId);
+    // }
+    
+    
+
+public async Task<ConversationSummaryDto> GetOrCreateDirectAsync(
+    Guid userAId,
+    Guid userBId)
+{
+
+
+    var directKey = CreateDirectKey(userAId, userBId);
+
+var existing = await _msgRepo.GetDirectConversationByKeyAsync(
+    directKey
+);
+
+if (existing != null)
+    return await ToSummary(existing, userAId);
+
+    if (existing != null)
+        return await ToSummary(existing, userAId);
+
+    await using var transaction =
+        await _db.Database.BeginTransactionAsync();
+
+    try
+    {
+        var conv = new Conversation
+        {
+            Type = 0,
+            CreatedBy = userAId,
+            DirectKey = directKey
+        };
+
         _db.Conversations.Add(conv);
+
         await _db.SaveChangesAsync();
 
         _db.ConversationMembers.AddRange(
-            new ConversationMember { ConversationId = conv.ConversationId, UserId = userAId },
-            new ConversationMember { ConversationId = conv.ConversationId, UserId = userBId }
+            new ConversationMember
+            {
+                ConversationId = conv.ConversationId,
+                UserId = userAId
+            },
+            new ConversationMember
+            {
+                ConversationId = conv.ConversationId,
+                UserId = userBId
+            }
         );
+
         await _db.SaveChangesAsync();
 
-        var full = await _msgRepo.GetConversationWithMembersAsync(conv.ConversationId);
+        await transaction.CommitAsync();
+
+        var full =
+            await _msgRepo.GetConversationWithMembersAsync(
+                conv.ConversationId
+            );
+
         return await ToSummary(full!, userAId);
     }
+    catch (DbUpdateException)
+    {
+        await transaction.RollbackAsync();
 
+        var existingAfterRace =
+            await _msgRepo.GetDirectConversationByKeyAsync(
+                directKey
+            );
+
+        if (existingAfterRace != null)
+            return await ToSummary(existingAfterRace, userAId);
+
+        throw;
+    }
+}
+ 
 
     public async Task<ConversationSummaryDto> CreateGroupConversationAsync(Guid creatorId, CreateGroupConversationDto dto) {
         var conv = new Conversation {
