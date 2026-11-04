@@ -104,7 +104,7 @@ public class CommentService : ICommentService {
         if (comment.AuthorId != userId)
             throw new Exception("Bạn không có quyền chỉnh sửa comment này.");
 
-        comment.Content   = content;
+        comment.Content = content;
         comment.UpdatedAt = DateTime.UtcNow;
         await _commentRepo.SaveChangesAsync();
         return MapToDto(comment);

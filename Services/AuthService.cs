@@ -93,7 +93,7 @@ public class AuthService : IAuthService {
             throw new Exception("Mật khẩu hiện tại không đúng.");
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
-        user.UpdatedAt    = DateTime.UtcNow;
+        user.UpdatedAt = DateTime.UtcNow;
         await _userRepo.SaveChangesAsync();
         return true;
     }
@@ -107,7 +107,7 @@ public class AuthService : IAuthService {
 
         // Lưu refresh token vào DB
         var userToken = new UserToken {
-            UserId    = user.UserId,
+            UserId = user.UserId,
             TokenType = 0,
             TokenHash = HashToken(refreshToken),
             ExpiresAt = DateTime.UtcNow.AddDays(expiryDays),

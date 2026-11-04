@@ -47,8 +47,7 @@ public class JwtService : IJwtService {
         try {
             var handler = new JwtSecurityTokenHandler();
             var key = Encoding.UTF8.GetBytes(_config["Jwt:Secret"]!);
-            var parameters = new TokenValidationParameters
-            {
+            var parameters = new TokenValidationParameters {
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new SymmetricSecurityKey(key),
                 ValidateIssuer = true,

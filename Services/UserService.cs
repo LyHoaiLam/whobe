@@ -78,10 +78,11 @@ public class UserService : IUserService {
         return true;
     }
 
+
     public async Task<PagedResultDto<UserProfileDto>> SearchUsersAsync(string keyword, int page, int pageSize) {
         var users = await _userRepo.SearchUsersAsync(keyword, page, pageSize);
         var items = users.Select(u => MapToDto(u, 0, 0, 0, null, false));
-        
+
         return new PagedResultDto<UserProfileDto> {
             Items = items,
             TotalCount = items.Count(),
@@ -90,30 +91,35 @@ public class UserService : IUserService {
         };
     }
 
+
     public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         var users = await _userRepo.GetFriendsAsync(userId);
         return users.Select(u => MapToDto(u, 0, 0, 0, "Accepted", false));
     }
+
 
     public async Task<IEnumerable<UserProfileDto>> GetFollowersAsync(Guid userId) {
         var users = await _userRepo.GetFollowersAsync(userId);
         return users.Select(u => MapToDto(u, 0, 0, 0, null, false));
     }
 
+
     public async Task<IEnumerable<UserProfileDto>> GetFollowingAsync(Guid userId) {
         var users = await _userRepo.GetFollowingAsync(userId);
         return users.Select(u => MapToDto(u, 0, 0, 0, null, true));
     }
+
 
     public async Task<IEnumerable<UserProfileDto>> GetMutualFriendsAsync(Guid userAId, Guid userBId) {
         var users = await _friendRepo.GetMutualFriendsAsync(userAId, userBId);
         return users.Select(u => MapToDto(u, 0, 0, 0, "Accepted", false));
     }
 
+
     public async Task DeactivateAccountAsync(Guid userId) {
         var user = await _userRepo.GetByIdAsync(userId)
             ?? throw new Exception("Người dùng không tồn tại.");
-        user.IsActive  = false;
+        user.IsActive = false;
         user.UpdatedAt = DateTime.UtcNow;
         await _userRepo.SaveChangesAsync();
     }

@@ -72,8 +72,8 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
 
             if (existing.Status == FriendshipStatus.Declined) {
                 // Cho phép gửi lại nếu đã bị từ chối
-                existing.Status      = FriendshipStatus.Pending;
-                existing.CreatedAt   = DateTime.UtcNow;
+                existing.Status = FriendshipStatus.Pending;
+                existing.CreatedAt = DateTime.UtcNow;
                 existing.RespondedAt = null;
                 await _friendRepo.SaveChangesAsync();
                 await PushFriendRequestNotificationAsync(requesterId, receiverId);
@@ -83,7 +83,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
 
         var blocked = await _db.BlockLists.AnyAsync(b =>
             (b.BlockerId == requesterId && b.BlockedId == receiverId) ||
-            (b.BlockerId == receiverId  && b.BlockedId == requesterId));
+            (b.BlockerId == receiverId && b.BlockedId == requesterId));
 
         if (blocked)
             throw new Exception("Không thể gửi lời mời kết bạn.");
@@ -162,8 +162,8 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         var friendship = await _db.Friendships
             .FirstOrDefaultAsync(f =>
                 f.RequesterId == requesterId &&
-                f.ReceiverId  == receiverId  &&
-                f.Status      == FriendshipStatus.Pending)
+                f.ReceiverId == receiverId  &&
+                f.Status == FriendshipStatus.Pending)
             ?? throw new Exception("Không tìm thấy lời mời kết bạn đang chờ.");
 
         _db.Friendships.Remove(friendship);
@@ -210,7 +210,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         if (already) return;
 
         _db.Follows.Add(new Follow {
-            FollowerId  = followerId,
+            FollowerId = followerId,
             FollowingId = followingId,
         });
         await _db.SaveChangesAsync();

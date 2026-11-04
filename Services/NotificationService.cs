@@ -15,6 +15,7 @@ public class NotificationService : INotificationService {
         _realtime  = realtime;
     }
 
+
     public async Task CreateAsync(
         Guid recipientId, Guid? actorId,
         NotificationType type, byte entityType,
@@ -43,8 +44,9 @@ public class NotificationService : INotificationService {
         await _realtime.PushUnreadCountAsync(recipientId, unread);
     }
 
+
     public async Task<PagedResultDto<NotificationDto>> GetByUserAsync(Guid userId, int page, int pageSize) {
-        var list  = await _notifRepo.GetByUserAsync(userId, page, pageSize);
+        var list = await _notifRepo.GetByUserAsync(userId, page, pageSize);
         var total = await _notifRepo.CountUnreadAsync(userId);
 
         return new PagedResultDto<NotificationDto> {

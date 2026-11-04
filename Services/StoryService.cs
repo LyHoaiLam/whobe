@@ -13,6 +13,7 @@ public class StoryService : IStoryService {
         _storage = storage;
     }
 
+
     public async Task<StoryResponseDto> CreateAsync(Guid userId, CreateStoryDto dto) {
         string? mediaUrl = null;
         if (dto.Media != null) {
@@ -39,28 +40,31 @@ public class StoryService : IStoryService {
         return MapToDto(story, 0, false);
     }
 
+
     public async Task<IEnumerable<StoryGroupDto>> GetFriendsStoriesAsync(Guid userId) {
         var stories = await _storyRepo.GetFriendsStoriesAsync(userId);
 
         return stories.GroupBy(s => s.UserId).Select(g => {
-                var user = g.First().User;
-                return new StoryGroupDto {
-                    UserId = g.Key,
-                    UserName = user?.FullName ?? "",
-                    UserAvatar = user?.AvatarUrl,
-                    HasUnviewed = g.Any(s => !s.Views.Any(v => v.ViewerId == userId)),
-                    Stories = g.Select(s =>
-                        MapToDto(s, s.Views.Count, s.Views.Any(v => v.ViewerId == userId))
-                    ).ToList(),
-                };
-            });
+            var user = g.First().User;
+            return new StoryGroupDto {
+                UserId = g.Key,
+                UserName = user?.FullName ?? "",
+                UserAvatar = user?.AvatarUrl,
+                HasUnviewed = g.Any(s => !s.Views.Any(v => v.ViewerId == userId)),
+                Stories = g.Select(s =>
+                    MapToDto(s, s.Views.Count, s.Views.Any(v => v.ViewerId == userId))
+                ).ToList(),
+            };
+        });
     }
+
 
     public async Task<IEnumerable<StoryResponseDto>> GetUserStoriesAsync(Guid profileUserId, Guid currentUserId) {
         var stories = await _storyRepo.GetActiveStoriesOfUserAsync(profileUserId);
         return stories.Select(s =>
             MapToDto(s, s.Views.Count, s.Views.Any(v => v.ViewerId == currentUserId)));
     }
+
 
     public async Task ViewAsync(Guid storyId, Guid viewerId) {
         var already = await _storyRepo.HasViewedAsync(storyId, viewerId);
@@ -75,6 +79,7 @@ public class StoryService : IStoryService {
         story.Views.Add(new StoryView { StoryId = storyId, ViewerId = viewerId });
         await _storyRepo.SaveChangesAsync();
     }
+
 
     public async Task ReactAsync(Guid storyId, Guid viewerId, byte reactionType) {
         var story = await _storyRepo.GetByIdAsync(storyId)
@@ -93,6 +98,7 @@ public class StoryService : IStoryService {
         await _storyRepo.SaveChangesAsync();
     }
 
+
     public async Task DeleteAsync(Guid storyId, Guid userId) {
         var story = await _storyRepo.GetByIdAsync(storyId)
             ?? throw new Exception("Story không tồn tại.");
@@ -106,6 +112,7 @@ public class StoryService : IStoryService {
         if (story.MediaUrl != null)
             await _storage.DeleteAsync(story.MediaUrl);
     }
+
 
     public async Task<IEnumerable<StoryViewerDto>> GetViewersAsync(Guid storyId, Guid ownerId) {
         var story = await _storyRepo.GetByIdAsync(storyId)
@@ -122,6 +129,7 @@ public class StoryService : IStoryService {
             ViewedAt = v.ViewedAt,
         });
     }
+
 
     private static StoryResponseDto MapToDto(Story s, int viewCount, bool isViewed) => new() {
         StoryId = s.StoryId,

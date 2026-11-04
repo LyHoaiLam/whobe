@@ -166,80 +166,70 @@ public class MessageService : IMessageService {
     
     
 
-public async Task<ConversationSummaryDto> GetOrCreateDirectAsync(
-    Guid userAId,
-    Guid userBId)
-{
+    public async Task<ConversationSummaryDto> GetOrCreateDirectAsync(Guid userAId, Guid userBId) {
 
+        var directKey = CreateDirectKey(userAId, userBId);
 
-    var directKey = CreateDirectKey(userAId, userBId);
-
-var existing = await _msgRepo.GetDirectConversationByKeyAsync(
-    directKey
-);
-
-if (existing != null)
-    return await ToSummary(existing, userAId);
-
-    if (existing != null)
-        return await ToSummary(existing, userAId);
-
-    await using var transaction =
-        await _db.Database.BeginTransactionAsync();
-
-    try
-    {
-        var conv = new Conversation
-        {
-            Type = 0,
-            CreatedBy = userAId,
-            DirectKey = directKey
-        };
-
-        _db.Conversations.Add(conv);
-
-        await _db.SaveChangesAsync();
-
-        _db.ConversationMembers.AddRange(
-            new ConversationMember
-            {
-                ConversationId = conv.ConversationId,
-                UserId = userAId
-            },
-            new ConversationMember
-            {
-                ConversationId = conv.ConversationId,
-                UserId = userBId
-            }
+        var existing = await _msgRepo.GetDirectConversationByKeyAsync(
+            directKey
         );
 
-        await _db.SaveChangesAsync();
+        if (existing != null)
+            return await ToSummary(existing, userAId);
 
-        await transaction.CommitAsync();
+            if (existing != null)
+                return await ToSummary(existing, userAId);
 
-        var full =
-            await _msgRepo.GetConversationWithMembersAsync(
-                conv.ConversationId
-            );
+            await using var transaction =
+                await _db.Database.BeginTransactionAsync();
 
-        return await ToSummary(full!, userAId);
-    }
-    catch (DbUpdateException)
-    {
-        await transaction.RollbackAsync();
+            try {
+                var conv = new Conversation {
+                    Type = 0,
+                    CreatedBy = userAId,
+                    DirectKey = directKey
+                };
 
-        var existingAfterRace =
-            await _msgRepo.GetDirectConversationByKeyAsync(
-                directKey
-            );
+                _db.Conversations.Add(conv);
 
-        if (existingAfterRace != null)
-            return await ToSummary(existingAfterRace, userAId);
+                await _db.SaveChangesAsync();
 
-        throw;
-    }
-}
- 
+                _db.ConversationMembers.AddRange(
+                    new ConversationMember {
+                        ConversationId = conv.ConversationId,
+                        UserId = userAId
+                    }, new ConversationMember {
+                        ConversationId = conv.ConversationId,
+                        UserId = userBId
+                    }
+                );
+
+                await _db.SaveChangesAsync();
+
+                await transaction.CommitAsync();
+
+                var full =
+                    await _msgRepo.GetConversationWithMembersAsync(
+                        conv.ConversationId
+                    );
+
+                return await ToSummary(full!, userAId);
+            } catch (DbUpdateException) {
+                await transaction.RollbackAsync();
+
+                var existingAfterRace =
+                    await _msgRepo.GetDirectConversationByKeyAsync(
+                        directKey
+                    );
+
+                if (existingAfterRace != null)
+                    return await ToSummary(existingAfterRace, userAId);
+
+                throw;
+            }
+        }
+
+
 
     public async Task<ConversationSummaryDto> CreateGroupConversationAsync(Guid creatorId, CreateGroupConversationDto dto) {
         var conv = new Conversation {
@@ -254,8 +244,7 @@ if (existing != null)
         if (!memberIds.Contains(creatorId)) memberIds.Add(creatorId);
 
         _db.ConversationMembers.AddRange(memberIds.Select(id =>
-            new ConversationMember
-            {
+            new ConversationMember {
                 ConversationId = conv.ConversationId,
                 UserId = id,
                 Role = (byte)(id == creatorId ? 2 : 0), // 2=Owner

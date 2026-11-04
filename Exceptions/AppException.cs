@@ -6,13 +6,10 @@
 //         : base(message) => StatusCode = statusCode;
 // }
 
-public class AppException : Exception
-{
+public class AppException : Exception {
     public int StatusCode { get; }
 
-    public AppException(string message, int statusCode = 400)
-        : base(message)
-    {
+    public AppException(string message, int statusCode = 400) : base(message) {
         StatusCode = statusCode;
     }
 }
