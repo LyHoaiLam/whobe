@@ -100,10 +100,7 @@ public class ChatHub : Hub {
         if (!Guid.TryParse(userIdString, out var userId))
             throw new HubException("User không hợp lệ.");
 
-        var conversation =
-            await _msgRepo.GetConversationWithMembersAsync(
-                conversationId
-            );
+        var conversation = await _msgRepo.GetConversationWithMembersAsync(conversationId);
 
         if (conversation == null)
             throw new HubException("Cuộc hội thoại không tồn tại.");

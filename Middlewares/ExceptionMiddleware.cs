@@ -58,32 +58,25 @@ using System.Text.Json;
 
 namespace whobe.Middlewares;
 
-public class ExceptionMiddleware
-{
+public class ExceptionMiddleware {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionMiddleware> _logger;
 
-    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger)
-    {
+    public ExceptionMiddleware(RequestDelegate next, ILogger<ExceptionMiddleware> logger) {
         _next = next;
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context)
-    {
-        try
-        {
+    public async Task InvokeAsync(HttpContext context) {
+        try {
             await _next(context);
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             _logger.LogError(ex, ex.Message);
             await HandleExceptionAsync(context, ex);
         }
     }
 
-    private static async Task HandleExceptionAsync(HttpContext context, Exception ex)
-    {
+    private static async Task HandleExceptionAsync(HttpContext context, Exception ex) {
         context.Response.ContentType = "application/json";
 
         var statusCode = ex is AppException
@@ -96,8 +89,7 @@ public class ExceptionMiddleware
 
         context.Response.StatusCode = statusCode;
 
-        var response = new
-        {
+        var response = new {
             status = statusCode,
             data = new { message }
         };

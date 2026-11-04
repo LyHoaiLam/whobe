@@ -143,7 +143,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         if (friendship.Status != FriendshipStatus.Pending)
             throw new Exception("Lời mời không hợp lệ.");
 
-        friendship.Status      = FriendshipStatus.Declined;
+        friendship.Status = FriendshipStatus.Declined;
         friendship.RespondedAt = DateTime.UtcNow;
         await _friendRepo.SaveChangesAsync();
     }
