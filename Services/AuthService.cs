@@ -27,10 +27,14 @@ public class AuthService : IAuthService {
 
         if (await _userRepo.IsUsernameExistsAsync(request.Username))
             throw new Exception("Username đã được sử dụng.");
+        
+        if (await _userRepo.IsPhoneNumberExistsAsync(request.PhoneNumber))
+            throw new Exception("Số điện thoại đã được sử dụng.");
 
         var user = new User {
             Username = request.Username.Trim(),
             Email = request.Email.Trim().ToLower(),
+            PhoneNumber = request.PhoneNumber.Trim(),
             FullName = request.FullName.Trim(),
             DateOfBirth = request.DateOfBirth,
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),

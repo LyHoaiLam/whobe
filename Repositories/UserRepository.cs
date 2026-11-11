@@ -26,6 +26,9 @@ public class UserRepository : GenericRepository<User>, IUserRepository {
     public async Task<bool> IsUsernameExistsAsync(string username) =>
         await _set.AnyAsync(u => u.Username == username);
 
+    public async Task<bool> IsPhoneNumberExistsAsync(string phoneNumber) =>
+        await _set.AnyAsync(u => u.PhoneNumber == phoneNumber);
+    
     public async Task<IEnumerable<User>> SearchUsersAsync(string keyword, int page, int pageSize) =>
         await _set
             .Where(u => u.IsActive &&

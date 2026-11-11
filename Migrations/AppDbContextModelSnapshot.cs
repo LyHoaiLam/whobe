@@ -417,9 +417,6 @@ namespace whobe.Migrations
                     b.Property<long>("MessageId")
                         .HasColumnType("bigint");
 
-                    b.Property<long?>("MessageId1")
-                        .HasColumnType("bigint");
-
                     b.Property<DateTime>("ReadAt")
                         .HasColumnType("datetime2");
 
@@ -427,8 +424,6 @@ namespace whobe.Migrations
                         .HasColumnType("uniqueidentifier");
 
                     b.HasKey("ReceiptId");
-
-                    b.HasIndex("MessageId1");
 
                     b.HasIndex("UserId");
 
@@ -914,6 +909,16 @@ namespace whobe.Migrations
 
                     b.HasKey("UserId");
 
+                    b.HasIndex("Email")
+                        .IsUnique();
+
+                    b.HasIndex("PhoneNumber")
+                        .IsUnique()
+                        .HasFilter("[PhoneNumber] IS NOT NULL");
+
+                    b.HasIndex("Username")
+                        .IsUnique();
+
                     b.ToTable("Users");
                 });
 
@@ -1184,14 +1189,10 @@ namespace whobe.Migrations
             modelBuilder.Entity("whobe.Models.MessageReadReceipt", b =>
                 {
                     b.HasOne("whobe.Models.Message", "Message")
-                        .WithMany()
+                        .WithMany("ReadReceipts")
                         .HasForeignKey("MessageId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("whobe.Models.Message", null)
-                        .WithMany("ReadReceipts")
-                        .HasForeignKey("MessageId1");
 
                     b.HasOne("whobe.Models.User", "User")
                         .WithMany()

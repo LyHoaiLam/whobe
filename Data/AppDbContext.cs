@@ -28,6 +28,17 @@ public class AppDbContext : DbContext {
 protected override void OnModelCreating(ModelBuilder modelBuilder) {
     base.OnModelCreating(modelBuilder);
 
+    modelBuilder.Entity<User>(entity => {
+        entity.HasIndex(x => x.Username)
+            .IsUnique();
+
+        entity.HasIndex(x => x.Email)
+            .IsUnique();
+
+        entity.HasIndex(x => x.PhoneNumber)
+            .IsUnique();
+    });
+
     // ================= USER RELATIONS =================
     modelBuilder.Entity<Follow>()
         .HasOne(f => f.Follower)
@@ -90,21 +101,19 @@ protected override void OnModelCreating(ModelBuilder modelBuilder) {
         .HasOne(cm => cm.User)
         .WithMany()
         .HasForeignKey(cm => cm.UserId);
-    modelBuilder.Entity<MessageReadReceipt>()
-        .HasKey(m => m.ReceiptId);
-    modelBuilder.Entity<MessageReadReceipt>()
-        .HasOne(m => m.Message)
-        .WithMany()
-        .HasForeignKey(m => m.MessageId)
-        .OnDelete(DeleteBehavior.Cascade);
-    modelBuilder.Entity<MessageReadReceipt>()
-        .HasOne(m => m.User)
-        .WithMany()
-        .HasForeignKey(m => m.UserId)
-        .OnDelete(DeleteBehavior.Restrict);
-    modelBuilder.Entity<MessageReadReceipt>()
-        .HasIndex(m => new { m.MessageId, m.UserId })
-        .IsUnique();
+    modelBuilder.Entity<MessageReadReceipt>(entity => {
+        entity.HasKey(m => m.ReceiptId);
+        entity.HasOne(m => m.Message)
+            .WithMany(m => m.ReadReceipts)
+            .HasForeignKey(m => m.MessageId)
+            .OnDelete(DeleteBehavior.Cascade);
+        entity.HasOne(m => m.User)
+            .WithMany()
+            .HasForeignKey(m => m.UserId)
+            .OnDelete(DeleteBehavior.Restrict);
+        entity.HasIndex(m => new { m.MessageId, m.UserId })
+            .IsUnique();
+    });
     modelBuilder.Entity<Notification>()
         .HasOne(n => n.Recipient)
         .WithMany(u => u.Notifications)
