@@ -23,13 +23,13 @@ public class AuthService : IAuthService {
 
     public async Task<LoginResponseDto> RegisterAsync(RegisterRequestDto request) {
         if (await _userRepo.IsEmailExistsAsync(request.Email))
-            throw new Exception("Email đã được sử dụng.");
+            throw new Exception("The email is already in use.");
 
         if (await _userRepo.IsUsernameExistsAsync(request.Username))
-            throw new Exception("Username đã được sử dụng.");
+            throw new Exception("The username is already in use.");
         
         if (await _userRepo.IsPhoneNumberExistsAsync(request.PhoneNumber))
-            throw new Exception("Số điện thoại đã được sử dụng.");
+            throw new Exception("The phone number is already in use");
 
         var user = new User {
             Username = request.Username.Trim(),
@@ -50,10 +50,10 @@ public class AuthService : IAuthService {
         var user = await _userRepo.GetByEmailOrUsernameAsync(request.EmailOrUsername);
 
         if (user == null || !BCrypt.Net.BCrypt.Verify(request.Password, user.PasswordHash))
-            throw new Exception("Tên đăng nhập hoặc mật khẩu không đúng.");
+            throw new Exception("Incorrect username or password.");
 
         if (!user.IsActive)
-            throw new Exception("Tài khoản đã bị vô hiệu hóa.");
+            throw new Exception("The account has been disabled.");
 
         user.LastLoginAt = DateTime.UtcNow;
         await _userRepo.SaveChangesAsync();
@@ -73,7 +73,7 @@ public class AuthService : IAuthService {
                 t.ExpiresAt > DateTime.UtcNow);
 
         if (userToken == null)
-            throw new Exception("Refresh token không hợp lệ hoặc đã hết hạn.");
+            throw new Exception("The refresh token is invalid or has expired.");
 
         // Thu hồi token cũ
         userToken.IsRevoked = true;
@@ -94,7 +94,7 @@ public class AuthService : IAuthService {
         if (user == null) return false;
 
         if (!BCrypt.Net.BCrypt.Verify(oldPassword, user.PasswordHash))
-            throw new Exception("Mật khẩu hiện tại không đúng.");
+            throw new Exception("The current password is incorrect.");
 
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(newPassword);
         user.UpdatedAt = DateTime.UtcNow;

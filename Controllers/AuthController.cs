@@ -202,14 +202,14 @@ public class AuthController : ControllerBase {
                 message = "Registration successful",
                 data = result
             });
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return BadRequest(new {
                 status = 400,
                 message = ex.Message
             });
         }
     }
+
 
 // =========================
 // LOGIN API
@@ -224,8 +224,7 @@ public class AuthController : ControllerBase {
                 message = "Login successful",
                 data = result
             });
-        }
-        catch (Exception ex) {
+        } catch (Exception ex) {
             return Unauthorized(new {
                 status = 401,
                 message = ex.Message
@@ -246,7 +245,7 @@ public class AuthController : ControllerBase {
         if (userIdClaim == null) {
             return Unauthorized(new {
                 status = 401,
-                message = "Token không hợp lệ"
+                message = "Invalid token"
             });
         }
 
@@ -272,7 +271,7 @@ public class AuthController : ControllerBase {
         if (user == null) {
             return NotFound(new {
                 status = 404,
-                message = "Không tìm thấy user"
+                message = "User cannot be found"
             });
         }
 
