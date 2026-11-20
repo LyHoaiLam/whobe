@@ -107,14 +107,17 @@ public class AuthService : IAuthService {
     private async Task<LoginResponseDto> GenerateAuthResponse(User user) {
         var accessToken  = _jwt.GenerateAccessToken(user);
         var refreshToken = _jwt.GenerateRefreshToken();
-        var expiryDays   = int.Parse(_config["Jwt:RefreshTokenExpiryDays"] ?? "30");
+        // var expiryDays   = int.Parse(_config["Jwt:RefreshTokenExpiryDays"] ?? "30");
+        var expiryMinutes   = int.Parse(_config["Jwt:RefreshTokenExpiryDays"] ?? "7");
+
 
         // Lưu refresh token vào DB
         var userToken = new UserToken {
             UserId = user.UserId,
             TokenType = 0,
             TokenHash = HashToken(refreshToken),
-            ExpiresAt = DateTime.UtcNow.AddDays(expiryDays),
+            // ExpiresAt = DateTime.UtcNow.AddDays(expiryDays),
+            ExpiresAt = DateTime.UtcNow.AddDays(expiryMinutes),
         };
 
         await _db.UserTokens.AddAsync(userToken);

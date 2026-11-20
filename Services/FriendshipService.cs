@@ -27,34 +27,32 @@ public class FriendshipService : IFriendshipService {
 
 
     // ── Lấy danh sách bạn ──────────────────────────────
-public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
-    // Lấy những friendship mà mình là Requester
-    var requesterSide = await _db.Friendships
-        .Where(friend => friend.Status == FriendshipStatus.Accepted && friend.RequesterId == userId)
-        .Select(friend => friend.Receiver)
-        .Where(user => user.IsActive)
-        .ToListAsync();
+    public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
+        // Lấy những friendship mà mình là Requester
+        var requesterSide = await _db.Friendships
+            .Where(friend => friend.Status == FriendshipStatus.Accepted && friend.RequesterId == userId)
+            .Select(friend => friend.Receiver)
+            .Where(user => user.IsActive)
+            .ToListAsync();
 
-    // Lấy những friendship mà mình là Receiver
-    var receiverSide = await _db.Friendships
-        .Where(friend => friend.Status == FriendshipStatus.Accepted && friend.ReceiverId == userId)
-        .Select(friend => friend.Requester)
-        .Where(user => user.IsActive)
-        .ToListAsync();
+        // Lấy những friendship mà mình là Receiver
+        var receiverSide = await _db.Friendships
+            .Where(friend => friend.Status == FriendshipStatus.Accepted && friend.ReceiverId == userId)
+            .Select(friend => friend.Requester)
+            .Where(user => user.IsActive)
+            .ToListAsync();
 
-    // Gộp 2 danh sách lại
-    var friends = requesterSide.Concat(receiverSide);
+        // Gộp 2 danh sách lại
+        var friends = requesterSide.Concat(receiverSide);
 
-    return friends.Select(user => new UserProfileDto {
-        UserId = user.UserId,
-        Username = user.Username,
-        FullName = user.FullName,
-        AvatarUrl = user.AvatarUrl,
-        CreatedAt = user.CreatedAt
-    });
-}
-
-
+        return friends.Select(user => new UserProfileDto {
+            UserId = user.UserId,
+            Username = user.Username,
+            FullName = user.FullName,
+            AvatarUrl = user.AvatarUrl,
+            CreatedAt = user.CreatedAt
+        });
+    }
 
 
     // ── Gửi lời mời kết bạn ──────────────────────────────
@@ -100,6 +98,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         await PushFriendRequestNotificationAsync(requesterId, receiverId);
     }
 
+
     // ── Chấp nhận lời mời ────────────────────────────────
     // FriendshipId là long (khớp với model Friendship.FriendshipId)
     public async Task AcceptRequestAsync(long friendshipId, Guid userId) {
@@ -130,6 +129,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         );
     }
 
+
     // ── Từ chối lời mời ──────────────────────────────────
     // FriendshipId là long (khớp với model)
     public async Task DeclineRequestAsync(long friendshipId, Guid userId) {
@@ -148,6 +148,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         await _friendRepo.SaveChangesAsync();
     }
 
+
     // ── Hủy kết bạn ──────────────────────────────────────
     public async Task UnfriendAsync(Guid userId, Guid friendId) {
         var friendship = await _friendRepo.GetAsync(userId, friendId)
@@ -156,6 +157,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         await _friendRepo.DeleteAsync(friendship);
         await _friendRepo.SaveChangesAsync();
     }
+
 
     // ── Thu hồi lời mời đang chờ ─────────────────────────
     public async Task CancelRequestAsync(Guid requesterId, Guid receiverId) {
@@ -169,6 +171,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         _db.Friendships.Remove(friendship);
         await _db.SaveChangesAsync();
     }
+
 
     // ── Block / Unblock ───────────────────────────────────
     public async Task BlockAsync(Guid blockerId, Guid blockedId) {
@@ -190,6 +193,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         await _db.SaveChangesAsync();
     }
 
+
     public async Task UnblockAsync(Guid blockerId, Guid blockedId) {
         var block = await _db.BlockLists
             .FirstOrDefaultAsync(b =>
@@ -200,6 +204,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
             await _db.SaveChangesAsync();
         }
     }
+
 
     // ── Follow / Unfollow ─────────────────────────────────
     public async Task FollowAsync(Guid followerId, Guid followingId) {
@@ -216,6 +221,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         await _db.SaveChangesAsync();
     }
 
+
     public async Task UnfollowAsync(Guid followerId, Guid followingId) {
         var follow = await _db.Follows
             .FirstOrDefaultAsync(f =>
@@ -227,26 +233,27 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
         }
     }
 
+
     // ── Queries ───────────────────────────────────────────
     public async Task<FriendshipStatus?> GetStatusAsync(Guid userAId, Guid userBId) =>
         await _friendRepo.GetStatusAsync(userAId, userBId);
 
- public async Task<PagedResultDto<PendingRequestDto>> GetPendingRequestsAsync(Guid userId) {
-    var list = await _friendRepo.GetPendingRequestsAsync(userId);
-    return new PagedResultDto<PendingRequestDto> {
-        Items = list.Select(f => new PendingRequestDto {
-            FriendshipId = f.FriendshipId,
-            UserId = f.Requester.UserId,
-            Username = f.Requester.Username,
-            FullName = f.Requester.FullName,
-            AvatarUrl = f.Requester.AvatarUrl,
-            CreatedAt = f.CreatedAt,
-        }),
-        TotalCount = list.Count(),
-        Page = 1,
-        PageSize = 100,
-    };
-}
+    public async Task<PagedResultDto<PendingRequestDto>> GetPendingRequestsAsync(Guid userId) {
+        var list = await _friendRepo.GetPendingRequestsAsync(userId);
+        return new PagedResultDto<PendingRequestDto> {
+            Items = list.Select(f => new PendingRequestDto {
+                FriendshipId = f.FriendshipId,
+                UserId = f.Requester.UserId,
+                Username = f.Requester.Username,
+                FullName = f.Requester.FullName,
+                AvatarUrl = f.Requester.AvatarUrl,
+                CreatedAt = f.CreatedAt,
+            }),
+            TotalCount = list.Count(),
+            Page = 1,
+            PageSize = 100,
+        };
+    }
 
 
     public async Task<IEnumerable<UserProfileDto>> GetSuggestedFriendsAsync(Guid userId, int count = 10) {
@@ -281,6 +288,7 @@ public async Task<IEnumerable<UserProfileDto>> GetFriendsAsync(Guid userId) {
             CreatedAt = u.CreatedAt,
         });
     }
+
 
     // ── Private helper ────────────────────────────────────
     private async Task PushFriendRequestNotificationAsync(Guid requesterId, Guid receiverId) {

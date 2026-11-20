@@ -13,11 +13,14 @@ namespace whobe.Controllers;
 [Route("api/[controller]")]
 public class AuthController : ControllerBase {
     private readonly AppDbContext _context;
+
+    private readonly IAuthService _authService;
     private readonly IJwtService _jwtService;
 
-    public AuthController(AppDbContext context, IJwtService jwtService) {
+    public AuthController(AppDbContext context, IJwtService jwtService, IAuthService authService) {
         _context = context;
         _jwtService = jwtService;
+        _authService = authService;
     }
 
 // =========================
@@ -61,54 +64,93 @@ public class AuthController : ControllerBase {
 // LOGIN API
 // =========================
     [HttpPost("login")]
+    // public async Task<IActionResult> Login(LoginRequestDto dto) {
+    //     // 1. tìm user theo username hoặc email
+    //     var user = await _context.Users
+    //         .FirstOrDefaultAsync(x => x.Username == dto.EmailOrUsername || x.Email == dto.EmailOrUsername);
+
+    //     if (user == null) {
+    //         return Unauthorized(new {
+    //             status = 401,
+    //             message = "The account does not exist."
+    //         });
+    //     }
+
+    //     // 2. check password
+    //     var isValidPassword = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
+
+    //     if (!isValidPassword) {
+    //         return Unauthorized(new {
+    //             status = 401,
+    //             message = "Incorrect password"
+    //         });
+    //     }
+
+    //     // 3. generate tokens
+    //     var accessToken = _jwtService.GenerateAccessToken(user);
+    //     var refreshToken = _jwtService.GenerateRefreshToken();
+
+    //     // 4. lưu refresh token (nếu bạn dùng bảng UserTokens)
+    //     _context.UserTokens.Add(new UserToken {
+    //         UserId = user.UserId,
+    //         TokenHash = refreshToken,
+    //         TokenType = 1, // refresh token
+    //         ExpiresAt = DateTime.UtcNow.AddDays(7),
+    //         CreatedAt = DateTime.UtcNow,
+    //         IsRevoked = false
+    //     });
+
+    //     await _context.SaveChangesAsync();
+
+    //     // 5. response
+    //     return Ok(new LoginResponseDto {
+    //         AccessToken = accessToken,
+    //         RefreshToken = refreshToken,
+    //         ExpiresAt = DateTime.UtcNow.AddMinutes(60),
+    //         UserId = user.UserId,
+    //         Username = user.Username,
+    //         FullName = user.FullName,
+    //         AvatarUrl = user.AvatarUrl
+    //     });
+    // }
+
     public async Task<IActionResult> Login(LoginRequestDto dto) {
-        // 1. tìm user theo username hoặc email
-        var user = await _context.Users
-            .FirstOrDefaultAsync(x => x.Username == dto.EmailOrUsername || x.Email == dto.EmailOrUsername);
-
-        if (user == null) {
+        try {
+            var result = await _authService.LoginAsync(dto);
+            return Ok(result);
+        }
+        catch (Exception ex) {
             return Unauthorized(new {
                 status = 401,
-                message = "The account does not exist."
+                message = ex.Message
             });
         }
+    }
 
-        // 2. check password
-        var isValidPassword = BCrypt.Net.BCrypt.Verify(dto.Password, user.PasswordHash);
 
-        if (!isValidPassword) {
+
+    [HttpPost("refresh")]
+    public async Task<IActionResult> RefreshToken(RefreshTokenRequestDto dto) {
+        try {
+            if (string.IsNullOrWhiteSpace(dto.RefreshToken)) {
+                return BadRequest(new {
+                    status = 400,
+                    message = "Refresh token is required."
+                });
+            }
+
+            var result = await _authService.RefreshTokenAsync(
+                dto.RefreshToken
+            );
+
+            return Ok(result);
+        }
+        catch (Exception ex) {
             return Unauthorized(new {
                 status = 401,
-                message = "Incorrect password"
+                message = ex.Message
             });
         }
-
-        // 3. generate tokens
-        var accessToken = _jwtService.GenerateAccessToken(user);
-        var refreshToken = _jwtService.GenerateRefreshToken();
-
-        // 4. lưu refresh token (nếu bạn dùng bảng UserTokens)
-        _context.UserTokens.Add(new UserToken {
-            UserId = user.UserId,
-            TokenHash = refreshToken,
-            TokenType = 1, // refresh token
-            ExpiresAt = DateTime.UtcNow.AddDays(7),
-            CreatedAt = DateTime.UtcNow,
-            IsRevoked = false
-        });
-
-        await _context.SaveChangesAsync();
-
-        // 5. response
-        return Ok(new LoginResponseDto {
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            ExpiresAt = DateTime.UtcNow.AddMinutes(60),
-            UserId = user.UserId,
-            Username = user.Username,
-            FullName = user.FullName,
-            AvatarUrl = user.AvatarUrl
-        });
     }
 
 
@@ -411,23 +453,23 @@ public class AuthController : ControllerBase {
 // // =========================
 // // REGISTER API
 // // =========================
-//     [HttpPost("register")]
-//     public async Task<IActionResult> Register(RegisterRequestDto dto) {
-//         try {
-//             var result = await _authService.RegisterAsync(dto);
+//     // [HttpPost("register")]
+//     // public async Task<IActionResult> Register(RegisterRequestDto dto) {
+//     //     try {
+//     //         var result = await _authService.RegisterAsync(dto);
 
-//             return StatusCode(StatusCodes.Status201Created, new {
-//                 status = 201,
-//                 message = "Registration successful",
-//                 data = result
-//             });
-//         } catch (Exception ex) {
-//             return BadRequest(new {
-//                 status = 400,
-//                 message = ex.Message
-//             });
-//         }
-//     }
+//     //         return StatusCode(StatusCodes.Status201Created, new {
+//     //             status = 201,
+//     //             message = "Registration successful",
+//     //             data = result
+//     //         });
+//     //     } catch (Exception ex) {
+//     //         return BadRequest(new {
+//     //             status = 400,
+//     //             message = ex.Message
+//     //         });
+//     //     }
+//     // }
 
 
 // // =========================
